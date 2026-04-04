@@ -29,14 +29,15 @@
     </div>
   </div>
 
-  <div class="collection-carousel__track-wrapper">
+  <div class="collection-carousel__tracks">
     {% for block in section.blocks %}
       {% if block.type == 'collection_tab' %}
         {% assign collection = block.settings.collection %}
         <div
-          class="collection-carousel__track{% if forloop.first %} collection-carousel__track--active{% endif %}"
+          class="collection-carousel__viewport{% if forloop.first %} collection-carousel__viewport--active{% endif %}"
           data-tab-track="{{ forloop.index0 }}"
         >
+        <div class="collection-carousel__track">
           {% if collection != blank %}
             {% for product in collection.products limit: 12 %}
               <div class="collection-carousel__card">
@@ -103,6 +104,7 @@
             {% endfor %}
           {% endif %}
         </div>
+        </div>
       {% endif %}
     {% endfor %}
   </div>
@@ -120,7 +122,6 @@
     justify-content: space-between;
     padding: 24px var(--page-margin) 20px;
     gap: 24px;
-    border-bottom: 1px solid var(--color-foreground);
   }
 
   .collection-carousel__label {
@@ -183,20 +184,22 @@
     font-weight: 600;
   }
 
-  .collection-carousel__track-wrapper {
+  .collection-carousel__tracks {
     position: relative;
+  }
+
+  .collection-carousel__viewport {
     overflow: hidden;
+    display: none;
+  }
+
+  .collection-carousel__viewport--active {
+    display: block;
   }
 
   .collection-carousel__track {
     display: flex;
     gap: 2px;
-    transition: transform 0.5s ease;
-    display: none;
-  }
-
-  .collection-carousel__track--active {
-    display: flex;
   }
 
   .collection-carousel__card {
@@ -283,60 +286,61 @@
     .collection-carousel__card {
       flex: 0 0 70%;
     }
-
-    .collection-carousel__track {
-      padding-left: var(--page-margin);
-    }
   }
 {% endstylesheet %}
 
-{% javascript %}
-  (function () {
+<script src="https://unpkg.com/embla-carousel/embla-carousel.umd.js"></script>
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
     var section = document.querySelector('.collection-carousel');
     if (!section) return;
 
     var tabs = section.querySelectorAll('[data-tab-index]');
-    var tracks = section.querySelectorAll('[data-tab-track]');
+    var viewports = section.querySelectorAll('[data-tab-track]');
     var prevBtn = section.querySelector('[data-direction="prev"]');
     var nextBtn = section.querySelector('[data-direction="next"]');
     var currentPageEl = section.querySelector('[data-current-page]');
     var totalPagesEl = section.querySelector('[data-total-pages]');
 
-    var currentPage = 0;
-    var itemsPerPage = window.innerWidth <= 768 ? 1 : 4;
+    var activeEmbla = null;
 
-    function getActiveTrack() {
-      return section.querySelector('.collection-carousel__track--active');
-    }
-
-    function getCardCount() {
-      var track = getActiveTrack();
-      return track ? track.querySelectorAll('.collection-carousel__card').length : 0;
-    }
-
-    function getTotalPages() {
-      return Math.ceil(getCardCount() / itemsPerPage);
+    function getSlidesToScroll() {
+      return window.innerWidth <= 768 ? 1 : 4;
     }
 
     function updateCounter() {
-      var total = getTotalPages();
-      currentPageEl.textContent = currentPage + 1;
+      if (!activeEmbla) return;
+      var snapList = activeEmbla.scrollSnapList();
+      var total = snapList.length;
+      var current = activeEmbla.selectedScrollSnap();
+      currentPageEl.textContent = current + 1;
       totalPagesEl.textContent = total;
-      prevBtn.style.opacity = currentPage === 0 ? '0.3' : '0.5';
-      prevBtn.style.fontWeight = currentPage === 0 ? '400' : '400';
-      nextBtn.style.opacity = currentPage >= total - 1 ? '0.3' : '1';
-      nextBtn.style.fontWeight = currentPage >= total - 1 ? '400' : '600';
+      prevBtn.style.opacity = !activeEmbla.canScrollPrev() ? '0.3' : '1';
+      nextBtn.style.opacity = !activeEmbla.canScrollNext() ? '0.3' : '1';
+      nextBtn.style.fontWeight = !activeEmbla.canScrollNext() ? '400' : '600';
     }
 
-    function slideTo(page) {
-      var track = getActiveTrack();
-      if (!track) return;
-      var total = getTotalPages();
-      if (page < 0 || page >= total) return;
-      currentPage = page;
-      var offset = currentPage * itemsPerPage * (100 / itemsPerPage);
-      track.style.transform = 'translateX(-' + offset + '%)';
-      updateCounter();
+    function initEmbla(viewport) {
+      if (activeEmbla) {
+        activeEmbla.destroy();
+        activeEmbla = null;
+      }
+
+      activeEmbla = EmblaCarousel(viewport, {
+        align: 'start',
+        slidesToScroll: getSlidesToScroll(),
+        containScroll: 'trimSnaps',
+        dragFree: true
+      });
+
+      activeEmbla.on('select', updateCounter);
+      activeEmbla.on('init', updateCounter);
+      activeEmbla.on('resize', updateCounter);
+    }
+
+    var activeViewport = section.querySelector('.collection-carousel__viewport--active');
+    if (activeViewport) {
+      initEmbla(activeViewport);
     }
 
     tabs.forEach(function (tab) {
@@ -344,28 +348,25 @@
         tabs.forEach(function (t) { t.classList.remove('collection-carousel__tab--active'); });
         tab.classList.add('collection-carousel__tab--active');
         var index = tab.getAttribute('data-tab-index');
-        tracks.forEach(function (t) { t.classList.remove('collection-carousel__track--active'); t.style.transform = ''; });
+        viewports.forEach(function (v) {
+          v.classList.remove('collection-carousel__viewport--active');
+        });
         var target = section.querySelector('[data-tab-track="' + index + '"]');
-        if (target) target.classList.add('collection-carousel__track--active');
-        currentPage = 0;
-        updateCounter();
+        if (target) {
+          target.classList.add('collection-carousel__viewport--active');
+          initEmbla(target);
+        }
       });
     });
 
-    prevBtn.addEventListener('click', function () { slideTo(currentPage - 1); });
-    nextBtn.addEventListener('click', function () { slideTo(currentPage + 1); });
-
-    window.addEventListener('resize', function () {
-      itemsPerPage = window.innerWidth <= 768 ? 1 : 4;
-      currentPage = 0;
-      var track = getActiveTrack();
-      if (track) track.style.transform = '';
-      updateCounter();
+    prevBtn.addEventListener('click', function () {
+      if (activeEmbla) activeEmbla.scrollPrev();
     });
-
-    updateCounter();
-  })();
-{% endjavascript %}
+    nextBtn.addEventListener('click', function () {
+      if (activeEmbla) activeEmbla.scrollNext();
+    });
+  });
+</script>
 
 {% schema %}
 {

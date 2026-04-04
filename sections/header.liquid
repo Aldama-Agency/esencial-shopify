@@ -1,51 +1,218 @@
-<header class="header">
-  <nav class="header__left">
-    <button class="header__link">{{ 'header.new_products' | t }}</button>
-    <button class="header__link">{{ 'header.shop' | t }}</button>
-    <a href="/collections/all" class="header__link">{{ 'header.archive' | t }}</a>
-  </nav>
+{% assign menu = section.settings.menu %}
 
-  <div class="header__center">
-    <a href="{{ routes.root_url }}" class="header__logo">
-      <img src="{{ 'logo.svg' | asset_url }}" alt="{{ shop.name }}" class="header__logo-img">
-    </a>
+<header class="header full-width">
+  <!-- Desktop -->
+  <div class="header__desktop">
+    <nav class="header__left">
+      {% if menu != blank %}
+        {% for link in menu.links %}
+          {% if link.links.size > 0 %}
+            <button
+              class="header__link header__nav-trigger"
+              data-mega-trigger="{{ link.title | handleize }}"
+            >
+              {{ link.title }}
+            </button>
+          {% else %}
+            <a href="{{ link.url }}" class="header__link">{{ link.title }}</a>
+          {% endif %}
+        {% endfor %}
+      {% else %}
+        <a href="/collections" class="header__link">{{ 'header.new_products' | t }}</a>
+        <a href="/collections" class="header__link">{{ 'header.shop' | t }}</a>
+        <a href="/collections/all" class="header__link">{{ 'header.archive' | t }}</a>
+      {% endif %}
+    </nav>
+
+    <div class="header__center">
+      <a href="{{ routes.root_url }}" class="header__logo">
+        <img src="{{ 'logo.svg' | asset_url }}" alt="{{ shop.name }}" class="header__logo-img">
+      </a>
+    </div>
+
+    <div class="header__right">
+      <form action="{{ routes.search_url }}" method="get" class="header__search-form">
+        <label for="header-search" class="visually-hidden">{{ 'header.search' | t }}</label>
+        <input
+          type="search"
+          id="header-search"
+          name="q"
+          placeholder="{{ 'header.search' | t | upcase }}"
+          class="header__search-input"
+        >
+      </form>
+      <a href="{{ routes.account_url }}" class="header__link">{{ 'header.account' | t }}</a>
+      <a href="/pages/wishlist" class="header__link">{{ 'header.wishlist' | t }}</a>
+      <a href="{{ routes.cart_url }}" class="header__cart-badge">{{ cart.item_count }}</a>
+    </div>
   </div>
 
-  <div class="header__right">
-    <a href="{{ routes.account_url }}" class="header__link">
-      {{ 'header.account' | t }}
+  <!-- Mega menus -->
+  {% if menu != blank %}
+    {% for link in menu.links %}
+      {% if link.links.size > 0 %}
+        <div class="header__mega" data-mega="{{ link.title | handleize }}">
+          <div class="header__mega-inner">
+            {% for child in link.links %}
+              <div class="header__mega-col">
+                {% if child.links.size > 0 %}
+                  <span class="header__mega-heading">{{ child.title }}</span>
+                  <ul class="header__mega-list">
+                    {% for grandchild in child.links %}
+                      <li><a href="{{ grandchild.url }}" class="header__mega-link">{{ grandchild.title }}</a></li>
+                    {% endfor %}
+                  </ul>
+                {% else %}
+                  <a href="{{ child.url }}" class="header__mega-heading header__mega-heading--link">{{ child.title }}</a>
+                {% endif %}
+              </div>
+            {% endfor %}
+          </div>
+        </div>
+      {% endif %}
+    {% endfor %}
+  {% endif %}
+
+  <!-- Mobile bar -->
+  <div class="header__mobile">
+    <button class="header__link header__mobile-menu-btn" data-mobile-open aria-label="{{ 'header.menu' | t }}">
+      {{ 'header.menu' | t }}
+    </button>
+    <a href="{{ routes.root_url }}" class="header__logo header__logo--mobile">
+      <img src="{{ 'logo.svg' | asset_url }}" alt="{{ shop.name }}" class="header__logo-img header__logo-img--mobile">
     </a>
-    <a href="/pages/wishlist" class="header__link">
-      {{ 'header.wishlist' | t }}
-    </a>
-    <a href="{{ routes.cart_url }}" class="header__cart">
-      {{ cart.item_count }}
+    <a href="{{ routes.cart_url }}" class="header__cart-link">
+      <span class="header__link">{{ 'header.cart' | t }}</span>
+      <span class="header__cart-badge">{{ cart.item_count }}</span>
     </a>
   </div>
 </header>
 
+<!-- Mobile menu dialog -->
+<dialog class="mobile-menu" scroll-lock data-mobile-menu>
+  <div class="mobile-menu__inner">
+    <div class="mobile-menu__top">
+      <button class="header__link mobile-menu__close-btn" data-mobile-close>
+        {{ 'header.close' | t }} &times;
+      </button>
+      <a href="{{ routes.account_url }}" class="header__link">{{ 'header.account' | t }}</a>
+      <a href="{{ routes.cart_url }}" class="header__cart-link">
+        <span class="header__link">{{ 'header.cart' | t }}</span>
+        <span class="header__cart-badge">{{ cart.item_count }}</span>
+      </a>
+    </div>
+
+    <form action="{{ routes.search_url }}" method="get" class="mobile-menu__search">
+      <label for="mobile-search" class="visually-hidden">{{ 'header.search' | t }}</label>
+      <input
+        type="search"
+        id="mobile-search"
+        name="q"
+        placeholder="{{ 'header.search' | t | upcase }}"
+        class="mobile-menu__search-input"
+      >
+    </form>
+
+    <nav class="mobile-menu__nav">
+      <!-- Root panel -->
+      <div class="mobile-menu__panel mobile-menu__panel--active" data-panel="root">
+        {% if menu != blank %}
+          <ul class="mobile-menu__list">
+            {% for link in menu.links %}
+              <li>
+                {% if link.links.size > 0 %}
+                  <button class="mobile-menu__link" data-go-to="{{ link.title | handleize }}">
+                    {{ link.title }}
+                    <span class="mobile-menu__chevron">&#x203A;</span>
+                  </button>
+                {% else %}
+                  <a href="{{ link.url }}" class="mobile-menu__link">{{ link.title }}</a>
+                {% endif %}
+              </li>
+            {% endfor %}
+          </ul>
+        {% else %}
+          <ul class="mobile-menu__list">
+            <li><a href="/collections" class="mobile-menu__link">{{ 'header.new_products' | t }}</a></li>
+            <li><a href="/collections" class="mobile-menu__link">{{ 'header.shop' | t }}</a></li>
+            <li><a href="/collections/all" class="mobile-menu__link">{{ 'header.archive' | t }}</a></li>
+          </ul>
+        {% endif %}
+      </div>
+
+      <!-- Level 1 panels -->
+      {% if menu != blank %}
+        {% for link in menu.links %}
+          {% if link.links.size > 0 %}
+            <div class="mobile-menu__panel" data-panel="{{ link.title | handleize }}">
+              <button class="mobile-menu__back" data-go-back>
+                &#x2039; {{ 'header.back_to' | t }} {{ link.title }}
+              </button>
+              <ul class="mobile-menu__list">
+                {% for child in link.links %}
+                  <li>
+                    {% if child.links.size > 0 %}
+                      <button class="mobile-menu__link" data-go-to="{{ link.title | handleize }}--{{ child.title | handleize }}">
+                        {{ child.title }}
+                        <span class="mobile-menu__chevron">&#x203A;</span>
+                      </button>
+                    {% else %}
+                      <a href="{{ child.url }}" class="mobile-menu__link">{{ child.title }}</a>
+                    {% endif %}
+                  </li>
+                {% endfor %}
+              </ul>
+            </div>
+
+            <!-- Level 2 panels -->
+            {% for child in link.links %}
+              {% if child.links.size > 0 %}
+                <div class="mobile-menu__panel" data-panel="{{ link.title | handleize }}--{{ child.title | handleize }}">
+                  <button class="mobile-menu__back" data-go-back>
+                    &#x2039; {{ 'header.back_to' | t }} {{ child.title }}
+                  </button>
+                  <ul class="mobile-menu__list">
+                    {% for grandchild in child.links %}
+                      <li>
+                        <a href="{{ grandchild.url }}" class="mobile-menu__link">{{ grandchild.title }}</a>
+                      </li>
+                    {% endfor %}
+                  </ul>
+                </div>
+              {% endif %}
+            {% endfor %}
+          {% endif %}
+        {% endfor %}
+      {% endif %}
+    </nav>
+
+    <div class="mobile-menu__footer">
+      <span class="mobile-menu__footer-item">{{ 'header.shipping_info' | t }}</span>
+      <a href="/pages/wishlist" class="mobile-menu__footer-item">{{ 'header.wishlist' | t }}</a>
+      <a href="{{ routes.account_url }}" class="mobile-menu__footer-item">{{ 'header.register' | t }}</a>
+      <a href="/pages/contact" class="mobile-menu__footer-item">{{ 'header.contacts' | t }}</a>
+    </div>
+
+    <div class="mobile-menu__watermark" aria-hidden="true">
+      <img src="{{ 'logo.svg' | asset_url }}" alt="" class="mobile-menu__watermark-img">
+    </div>
+  </div>
+</dialog>
+
 {% stylesheet %}
-  .header {
-    display: grid;
-    grid-template-columns: 1fr auto 1fr;
-    align-items: center;
-    height: 3rem;
-    gap: 1rem;
+  /* === Shared === */
+  .visually-hidden {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
   }
-  .header__left {
-    display: flex;
-    gap: 1.5rem;
-    justify-self: start;
-  }
-  .header__center {
-    justify-self: center;
-  }
-  .header__right {
-    display: flex;
-    gap: 1.5rem;
-    align-items: center;
-    justify-self: end;
-  }
+
   .header__link {
     text-decoration: none;
     color: var(--color-foreground);
@@ -53,12 +220,17 @@
     text-transform: uppercase;
     letter-spacing: 0.05em;
     font-weight: 500;
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-family: inherit;
+    padding: 0;
   }
+
   .header__logo {
     display: flex;
     align-items: center;
     text-decoration: none;
-    color: var(--color-foreground);
   }
 
   .header__logo-img {
@@ -66,34 +238,492 @@
     width: auto;
   }
 
-  .header__cart {
+  .header__cart-badge {
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 2rem;
-    height: 2rem;
+    width: 1.75rem;
+    height: 1.75rem;
     border: 1px solid var(--color-foreground);
     text-decoration: none;
     color: var(--color-foreground);
-    font-size: 0.85rem;
+    font-size: 0.8rem;
+    flex-shrink: 0;
   }
 
-  button {
-    background-color: transparent;
-    border: none;
-    cursor: pointer;
-  }
-
-  button.header__link {
+  .header__cart-link {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
     text-decoration: none;
     color: var(--color-foreground);
+  }
+
+  /* === Desktop header === */
+  .header {
+    position: relative;
+    border-bottom: 1px solid #ccc;
+  }
+
+  .header__desktop {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    align-items: center;
+    padding: 0 var(--page-margin);
+    height: 3rem;
+    gap: 1rem;
+  }
+
+  .header__left {
+    display: flex;
+    gap: 1.5rem;
+    align-items: center;
+    height: 100%;
+  }
+
+  .header__nav-trigger {
+    height: 100%;
+    display: flex;
+    align-items: center;
+  }
+
+  .header__center {
+    justify-self: center;
+  }
+
+  .header__right {
+    display: flex;
+    gap: 1.5rem;
+    align-items: center;
+    justify-self: end;
+  }
+
+  .header__search-form {
+    display: flex;
+    align-items: center;
+  }
+
+  .header__search-input {
+    border: none;
+    border-bottom: 1px solid var(--color-foreground);
+    background: none;
     font-size: 0.73rem;
     text-transform: uppercase;
     letter-spacing: 0.05em;
+    padding: 4px 0;
+    width: 120px;
+    outline: none;
+    color: var(--color-foreground);
+    font-family: inherit;
+    border-radius: 0;
+  }
+
+  .header__search-input::placeholder {
+    color: var(--color-foreground);
+    opacity: 0.6;
+  }
+
+  /* === Mega menu === */
+  .header__mega {
+    display: none;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: var(--color-background);
+    border-bottom: 1px solid #ccc;
+    padding: 2rem var(--page-margin);
+    z-index: 100;
+  }
+
+  .header__mega--active {
+    display: block;
+  }
+
+  .header__mega-inner {
+    display: flex;
+    gap: 3rem;
+  }
+
+  .header__mega-col {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .header__mega-heading {
+    font-size: 0.73rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--color-foreground);
+    margin-bottom: 0.5rem;
+  }
+
+  .header__mega-heading--link {
+    text-decoration: none;
+  }
+
+  .header__mega-heading--link:hover {
+    opacity: 0.7;
+  }
+
+  .header__mega-list {
+    list-style: none;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .header__mega-link {
+    font-size: 0.73rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    text-decoration: none;
+    color: var(--color-foreground);
+    font-weight: 400;
+  }
+
+  .header__mega-link:hover {
+    opacity: 0.7;
+  }
+
+  /* === Mobile bar (hidden on desktop) === */
+  .header__mobile {
+    display: none;
+  }
+
+  .header__mobile-menu-btn {
+    justify-self: start;
+  }
+
+  .header__logo--mobile {
+    justify-self: center;
+  }
+
+  .header__logo-img--mobile {
+    height: 2.5rem;
+  }
+
+  /* === Mobile breakpoint === */
+  @media (max-width: 768px) {
+    .header__desktop {
+      display: none;
+    }
+
+    .header__mega {
+      display: none !important;
+    }
+
+    .header__mobile {
+      display: grid;
+      grid-template-columns: 1fr auto 1fr;
+      align-items: center;
+      padding: 0 var(--page-margin);
+      height: 3.5rem;
+    }
+
+    .header__mobile .header__cart-link {
+      justify-self: end;
+    }
+  }
+
+  /* === Mobile menu dialog === */
+  .mobile-menu {
+    position: fixed;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    max-width: 100%;
+    max-height: 100%;
+    margin: 0;
+    padding: 0;
+    border: none;
+    background: var(--color-background);
+    color: var(--color-foreground);
+    z-index: 1000;
+  }
+
+  .mobile-menu::backdrop {
+    background: transparent;
+  }
+
+  .mobile-menu__inner {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    padding: 0 var(--page-margin);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .mobile-menu__top {
+    display: grid;
+    grid-template-columns: 1fr auto auto;
+    align-items: center;
+    gap: 1.5rem;
+    height: 3.5rem;
+    flex-shrink: 0;
+  }
+
+  .mobile-menu__close-btn {
+    justify-self: start;
+  }
+
+  .mobile-menu__search {
+    flex-shrink: 0;
+    border-bottom: 1px solid var(--color-foreground);
+    padding-bottom: 0.75rem;
+    margin-bottom: 1rem;
+  }
+
+  .mobile-menu__search-input {
+    width: 100%;
+    border: none;
+    background: none;
+    font-size: 0.73rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    padding: 8px 0;
+    outline: none;
+    color: var(--color-foreground);
+    font-family: inherit;
     font-weight: 500;
   }
 
+  .mobile-menu__search-input::placeholder {
+    color: var(--color-foreground);
+    opacity: 0.6;
+  }
+
+  /* Panels */
+  .mobile-menu__nav {
+    position: relative;
+    flex: 1;
+    overflow: hidden;
+  }
+
+  .mobile-menu__panel {
+    position: absolute;
+    inset: 0;
+    overflow-y: auto;
+    padding-top: 1rem;
+    transform: translateX(100%);
+    transition: transform 0.3s ease;
+  }
+
+  .mobile-menu__panel--active {
+    transform: translateX(0);
+  }
+
+  .mobile-menu__panel--exit-left {
+    transform: translateX(-100%);
+  }
+
+  .mobile-menu__list {
+    list-style: none;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .mobile-menu__link {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    padding: 0.75rem 0;
+    font-size: 0.85rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    text-decoration: none;
+    color: var(--color-foreground);
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-family: inherit;
+  }
+
+  .mobile-menu__chevron {
+    font-size: 1.2rem;
+    color: #999;
+  }
+
+  .mobile-menu__back {
+    display: block;
+    width: 100%;
+    text-align: left;
+    padding: 0.5rem 0 1rem;
+    font-size: 0.73rem;
+    letter-spacing: 0.05em;
+    color: #999;
+    background: none;
+    border: none;
+    border-bottom: 1px solid #eee;
+    cursor: pointer;
+    font-family: inherit;
+    margin-bottom: 0.75rem;
+    text-transform: uppercase;
+  }
+
+  .mobile-menu__footer {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    padding: 1.5rem 0;
+    flex-shrink: 0;
+    margin-top: auto;
+  }
+
+  .mobile-menu__footer-item {
+    font-size: 0.85rem;
+    text-decoration: none;
+    color: var(--color-foreground);
+  }
+
+  .mobile-menu__watermark {
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    pointer-events: none;
+    opacity: 0.05;
+  }
+
+  .mobile-menu__watermark-img {
+    height: 40vh;
+    width: auto;
+  }
 {% endstylesheet %}
+
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    var header = document.querySelector('.header');
+    var dialog = document.querySelector('[data-mobile-menu]');
+    if (!header) return;
+
+    /* === Desktop mega menu === */
+    var triggers = header.querySelectorAll('[data-mega-trigger]');
+    var megas = header.querySelectorAll('[data-mega]');
+    var closeTimeout = null;
+
+    function openMega(id) {
+      clearTimeout(closeTimeout);
+      megas.forEach(function (m) { m.classList.remove('header__mega--active'); });
+      var target = header.querySelector('[data-mega="' + id + '"]');
+      if (target) target.classList.add('header__mega--active');
+    }
+
+    function closeMegas() {
+      closeTimeout = setTimeout(function () {
+        megas.forEach(function (m) { m.classList.remove('header__mega--active'); });
+      }, 150);
+    }
+
+    triggers.forEach(function (trigger) {
+      trigger.addEventListener('mouseenter', function () {
+        openMega(trigger.getAttribute('data-mega-trigger'));
+      });
+      trigger.addEventListener('mouseleave', closeMegas);
+      trigger.addEventListener('click', function () {
+        var id = trigger.getAttribute('data-mega-trigger');
+        var target = header.querySelector('[data-mega="' + id + '"]');
+        if (target && target.classList.contains('header__mega--active')) {
+          target.classList.remove('header__mega--active');
+        } else {
+          openMega(id);
+        }
+      });
+    });
+
+    megas.forEach(function (mega) {
+      mega.addEventListener('mouseenter', function () { clearTimeout(closeTimeout); });
+      mega.addEventListener('mouseleave', closeMegas);
+    });
+
+    document.addEventListener('click', function (e) {
+      if (!e.target.closest('[data-mega-trigger]') && !e.target.closest('[data-mega]')) {
+        megas.forEach(function (m) { m.classList.remove('header__mega--active'); });
+      }
+    });
+
+    /* === Mobile menu === */
+    if (!dialog) return;
+
+    var openBtn = header.querySelector('[data-mobile-open]');
+    var closeBtn = dialog.querySelector('[data-mobile-close]');
+    var panels = dialog.querySelectorAll('[data-panel]');
+    var panelHistory = ['root'];
+
+    function resetPanels() {
+      panels.forEach(function (p) {
+        p.classList.remove('mobile-menu__panel--active', 'mobile-menu__panel--exit-left');
+      });
+      var root = dialog.querySelector('[data-panel="root"]');
+      if (root) root.classList.add('mobile-menu__panel--active');
+      panelHistory = ['root'];
+    }
+
+    if (openBtn) {
+      openBtn.addEventListener('click', function () {
+        resetPanels();
+        dialog.showModal();
+      });
+    }
+
+    if (closeBtn) {
+      closeBtn.addEventListener('click', function () {
+        dialog.close();
+      });
+    }
+
+    /* Close on backdrop click */
+    dialog.addEventListener('click', function (e) {
+      if (e.target === dialog) {
+        dialog.close();
+      }
+    });
+
+    /* Close on Escape is handled natively by dialog */
+
+    /* Navigate forward */
+    dialog.querySelectorAll('[data-go-to]').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        var targetId = btn.getAttribute('data-go-to');
+        var current = dialog.querySelector('.mobile-menu__panel--active');
+        var target = dialog.querySelector('[data-panel="' + targetId + '"]');
+        if (!current || !target) return;
+
+        current.classList.remove('mobile-menu__panel--active');
+        current.classList.add('mobile-menu__panel--exit-left');
+        target.classList.add('mobile-menu__panel--active');
+
+        panelHistory.push(targetId);
+      });
+    });
+
+    /* Navigate back */
+    dialog.querySelectorAll('[data-go-back]').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        if (panelHistory.length <= 1) return;
+
+        var currentId = panelHistory.pop();
+        var prevId = panelHistory[panelHistory.length - 1];
+
+        var current = dialog.querySelector('[data-panel="' + currentId + '"]');
+        var prev = dialog.querySelector('[data-panel="' + prevId + '"]');
+        if (!current || !prev) return;
+
+        current.classList.remove('mobile-menu__panel--active');
+        /* Reset to right side (default translateX(100%)) */
+
+        prev.classList.remove('mobile-menu__panel--exit-left');
+        prev.classList.add('mobile-menu__panel--active');
+      });
+    });
+  });
+</script>
 
 {% schema %}
 {

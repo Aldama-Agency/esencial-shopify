@@ -21,13 +21,15 @@
         "tab-1": {
           "type": "collection_tab",
           "settings": {
-            "tab_label": "Main SS26"
+            "tab_label": "Main SS26",
+            "collection": "main-ss26"
           }
         },
         "tab-2": {
           "type": "collection_tab",
           "settings": {
-            "tab_label": "Travel SS26"
+            "tab_label": "Archive",
+            "collection": "archive"
           }
         }
       },

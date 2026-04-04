@@ -57,11 +57,19 @@
     "announcement_text": "Free shipping on orders over $150 USD"
   },
   "header": {
-    "new_products":"New products",
-    "shop":"Shop",
-    "archive":"Archive",
+    "new_products": "New products",
+    "shop": "Shop",
+    "archive": "Archive",
     "account": "Account",
-    "wishlist": "Wishlist"
+    "wishlist": "Wishlist",
+    "search": "Search",
+    "cart": "Cart",
+    "menu": "Menu",
+    "close": "Close",
+    "back_to": "Back to",
+    "shipping_info": "Shipping: US",
+    "register": "Register",
+    "contacts": "Contacts"
   },
   "gift_card": {
     "add_to_apple_wallet": "Add to Apple Wallet",
