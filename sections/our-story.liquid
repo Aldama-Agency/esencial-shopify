@@ -1,0 +1,216 @@
+<section class="our-story full-width">
+  <div class="our-story__inner">
+    <div class="our-story__left">
+      <div class="our-story__left-inner">
+        <div class="our-story__paragraphs">
+          <div class="our-story__para-col">
+            <p class="our-story__paragraph">{{ section.settings.paragraph_1 }}</p>
+          </div>
+          <div class="our-story__para-col">
+            <p class="our-story__paragraph">{{ section.settings.paragraph_2 }}</p>
+          </div>
+        </div>
+        <a href="{{ section.settings.about_link | default: '/pages/about' }}" class="our-story__link">
+          {{ section.settings.link_text | default: 'About Us' | upcase }}
+        </a>
+      </div>
+    </div>
+
+    <div class="our-story__right">
+      {% if section.settings.image != blank %}
+        <img
+          src="{{ section.settings.image | image_url: width: 1400 }}"
+          alt="{{ section.settings.image.alt | escape }}"
+          loading="lazy"
+          width="700"
+          height="1000"
+          class="our-story__image"
+        >
+      {% elsif section.settings.image_url != blank %}
+        <img
+          src="{{ section.settings.image_url }}"
+          alt=""
+          loading="lazy"
+          class="our-story__image"
+        >
+      {% else %}
+        <div class="our-story__image-placeholder">
+          <span>Replace with your image</span>
+        </div>
+      {% endif %}
+    </div>
+  </div>
+</section>
+
+{% stylesheet %}
+  .our-story {
+    width: 100%;
+  }
+
+  .our-story__inner {
+    display: flex;
+    align-items: flex-start;
+    width: 100%;
+  }
+
+  .our-story__left {
+    width: 50%;
+    position: sticky;
+    top: 0;
+    align-self: flex-start;
+    min-height: 50vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 80px 40px;
+    box-sizing: border-box;
+  }
+
+  .our-story__left-inner {
+    width: 100%;
+    max-width: 560px;
+  }
+
+  .our-story__paragraphs {
+    display: flex;
+    gap: 32px;
+    margin-bottom: 48px;
+  }
+
+  .our-story__para-col {
+    flex: 0 0 calc(50% - 16px);
+  }
+
+  .our-story__paragraph {
+    font-size: 14px;
+    line-height: 1.7;
+    color: var(--color-foreground);
+    margin: 0;
+  }
+
+  .our-story__link {
+    display: inline-block;
+    font-size: 12px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--color-foreground);
+    text-decoration: none;
+    border-bottom: 1px solid var(--color-foreground);
+    padding-bottom: 2px;
+    transition: opacity 0.2s;
+  }
+
+  .our-story__link:hover {
+    opacity: 0.6;
+  }
+
+  .our-story__right {
+    width: 50%;
+    flex-shrink: 0;
+  }
+
+  .our-story__image {
+    width: 100%;
+    height: 100dvh;
+    object-fit: cover;
+    display: block;
+  }
+
+  .our-story__image-placeholder {
+    width: 100%;
+    height: 100dvh;
+    background-color: #e5e5e5;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .our-story__image-placeholder span {
+    font-size: 13px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: #999;
+    border: 1px dashed #ccc;
+    padding: 12px 20px;
+  }
+
+  @media (max-width: 768px) {
+    .our-story__inner {
+      flex-direction: column;
+    }
+
+    .our-story__left {
+      width: 100%;
+      position: static;
+      height: auto;
+      padding: 48px 20px;
+    }
+
+    .our-story__paragraphs {
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .our-story__para-col {
+      flex: 0 0 100%;
+    }
+
+    .our-story__right {
+      width: 100%;
+    }
+
+    .our-story__image {
+      height: 70dvh;
+    }
+
+    .our-story__image-placeholder {
+      height: 70dvh;
+    }
+  }
+{% endstylesheet %}
+
+{% schema %}
+{
+  "name": "Our Story",
+  "settings": [
+    {
+      "type": "textarea",
+      "id": "paragraph_1",
+      "label": "Paragraph 1",
+      "default": "9PM was born in January 2009 from the passion and dedication of a team of designers for couture, precious materials, refined volumes and the art of tailoring, as well as the aim of conceiving everyday clothing, comfortable and accessible for everyone without sacrificing elegance and creativity."
+    },
+    {
+      "type": "textarea",
+      "id": "paragraph_2",
+      "label": "Paragraph 2",
+      "default": "An Italian women's clothing brand with an evocative name: the moment of day when we transition from business to pleasure, from formal to informal."
+    },
+    {
+      "type": "text",
+      "id": "link_text",
+      "label": "Link text",
+      "default": "About Us"
+    },
+    {
+      "type": "url",
+      "id": "about_link",
+      "label": "Link URL"
+    },
+    {
+      "type": "image_picker",
+      "id": "image",
+      "label": "Image (right side)"
+    },
+    {
+      "type": "text",
+      "id": "image_url",
+      "label": "Or external image URL"
+    }
+  ],
+  "presets": [
+    {
+      "name": "Our Story"
+    }
+  ]
+}
+{% endschema %}

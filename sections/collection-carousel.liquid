@@ -1,6 +1,6 @@
-<div class="collection-carousel full-width">
+<div class="collection-carousel full-width" data-section-id="{{ section.id }}">
   <div class="collection-carousel__header">
-    <span class="collection-carousel__label">{{ 'collection_carousel.new_in' | t }}</span>
+    <span class="collection-carousel__label">{{ section.settings.heading | default: 'New In' | upcase }}</span>
 
     <div class="collection-carousel__tabs">
       {% for block in section.blocks %}
@@ -20,11 +20,11 @@
       <span class="collection-carousel__counter">
         <span data-current-page>1</span>/<span data-total-pages>1</span>
       </span>
-      <button class="collection-carousel__arrow" data-direction="prev" aria-label="{{ 'collection_carousel.previous' | t }}">
-        {{ 'collection_carousel.previous' | t | upcase }}
+      <button class="collection-carousel__arrow" data-direction="prev" aria-label="Previous">
+        PREV
       </button>
-      <button class="collection-carousel__arrow collection-carousel__arrow--next" data-direction="next" aria-label="{{ 'collection_carousel.next' | t }}">
-        {{ 'collection_carousel.next' | t | upcase }}
+      <button class="collection-carousel__arrow collection-carousel__arrow--next" data-direction="next" aria-label="Next">
+        NEXT
       </button>
     </div>
   </div>
@@ -41,40 +41,42 @@
           {% if collection != blank %}
             {% for product in collection.products limit: 12 %}
               <div class="collection-carousel__card">
-                <div class="collection-carousel__image-wrapper">
-                  {% if product.featured_image != blank %}
-                    <img
-                      src="{{ product.featured_image | image_url: width: 600, height: 800, crop: 'center' }}"
-                      alt="{{ product.featured_image.alt | escape }}"
-                      loading="lazy"
-                      width="600"
-                      height="800"
-                      class="collection-carousel__image"
-                    >
-                  {% else %}
-                    {{ 'product-1' | placeholder_svg_tag: 'collection-carousel__image collection-carousel__placeholder' }}
-                  {% endif %}
+                <a href="{{ product.url }}" class="collection-carousel__card-link">
+                  <div class="collection-carousel__image-wrapper">
+                    {% if product.featured_image != blank %}
+                      <img
+                        src="{{ product.featured_image | image_url: width: 600, height: 800, crop: 'center' }}"
+                        alt="{{ product.featured_image.alt | escape }}"
+                        loading="lazy"
+                        width="600"
+                        height="800"
+                        class="collection-carousel__image"
+                      >
+                    {% else %}
+                      {{ 'product-1' | placeholder_svg_tag: 'collection-carousel__image collection-carousel__placeholder' }}
+                    {% endif %}
 
-                  <button class="collection-carousel__wishlist" aria-label="{{ 'collection_carousel.add_to_wishlist' | t }}">
-                    <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
-                      <path d="M3 1.5H15V16.5L9 12.75L3 16.5V1.5Z" stroke="currentColor" stroke-width="1" fill="none"/>
-                    </svg>
-                  </button>
+                    <button class="collection-carousel__wishlist" aria-label="Save">
+                      <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M3 1.5H15V16.5L9 12.75L3 16.5V1.5Z" stroke="currentColor" stroke-width="1" fill="none"/>
+                      </svg>
+                    </button>
 
-                  <button class="collection-carousel__add-to-cart" aria-label="{{ 'collection_carousel.add_to_cart' | t }}">
-                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-                      <rect x="0.5" y="0.5" width="15" height="15" stroke="currentColor" fill="none"/>
-                      <line x1="8" y1="4" x2="8" y2="12" stroke="currentColor" stroke-width="1"/>
-                      <line x1="4" y1="8" x2="12" y2="8" stroke="currentColor" stroke-width="1"/>
-                    </svg>
-                  </button>
-                </div>
+                    <button class="collection-carousel__add-to-cart" aria-label="Quick add">
+                      <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <rect x="0.5" y="0.5" width="15" height="15" stroke="currentColor" fill="none"/>
+                        <line x1="8" y1="4" x2="8" y2="12" stroke="currentColor" stroke-width="1"/>
+                        <line x1="4" y1="8" x2="12" y2="8" stroke="currentColor" stroke-width="1"/>
+                      </svg>
+                    </button>
+                  </div>
 
-                <div class="collection-carousel__info">
-                  <span class="collection-carousel__vendor">{{ product.vendor }}</span>
-                  <span class="collection-carousel__title">{{ product.title }}</span>
-                  <span class="collection-carousel__price">{{ product.price | money }}</span>
-                </div>
+                  <div class="collection-carousel__info">
+                    <span class="collection-carousel__vendor">{{ product.vendor }}</span>
+                    <span class="collection-carousel__title">{{ product.title }}</span>
+                    <span class="collection-carousel__price">{{ product.price | money }}</span>
+                  </div>
+                </a>
               </div>
             {% endfor %}
           {% else %}
@@ -82,12 +84,12 @@
               <div class="collection-carousel__card">
                 <div class="collection-carousel__image-wrapper">
                   {{ 'product-1' | placeholder_svg_tag: 'collection-carousel__image collection-carousel__placeholder' }}
-                  <button class="collection-carousel__wishlist" aria-label="{{ 'collection_carousel.add_to_wishlist' | t }}">
+                  <button class="collection-carousel__wishlist" aria-label="Save">
                     <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
                       <path d="M3 1.5H15V16.5L9 12.75L3 16.5V1.5Z" stroke="currentColor" stroke-width="1" fill="none"/>
                     </svg>
                   </button>
-                  <button class="collection-carousel__add-to-cart" aria-label="{{ 'collection_carousel.add_to_cart' | t }}">
+                  <button class="collection-carousel__add-to-cart" aria-label="Quick add">
                     <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
                       <rect x="0.5" y="0.5" width="15" height="15" stroke="currentColor" fill="none"/>
                       <line x1="8" y1="4" x2="8" y2="12" stroke="currentColor" stroke-width="1"/>
@@ -207,6 +209,12 @@
     min-width: 0;
   }
 
+  .collection-carousel__card-link {
+    display: block;
+    text-decoration: none;
+    color: inherit;
+  }
+
   .collection-carousel__image-wrapper {
     position: relative;
     aspect-ratio: 3 / 4;
@@ -257,7 +265,7 @@
     display: flex;
     flex-direction: column;
     gap: 2px;
-    padding: 12px var(--page-margin) 24px;
+    padding: 12px 16px 24px;
   }
 
   .collection-carousel__vendor {
@@ -291,8 +299,11 @@
 
 <script src="https://unpkg.com/embla-carousel/embla-carousel.umd.js"></script>
 <script>
-  document.addEventListener('DOMContentLoaded', function () {
-    var section = document.querySelector('.collection-carousel');
+  (function () {
+    var sectionId = '{{ section.id }}';
+    var sectionEl = document.getElementById('shopify-section-' + sectionId);
+    if (!sectionEl) return;
+    var section = sectionEl.querySelector('.collection-carousel');
     if (!section) return;
 
     var tabs = section.querySelectorAll('[data-tab-index]');
@@ -338,39 +349,55 @@
       activeEmbla.on('resize', updateCounter);
     }
 
-    var activeViewport = section.querySelector('.collection-carousel__viewport--active');
-    if (activeViewport) {
-      initEmbla(activeViewport);
+    function init() {
+      var activeViewport = section.querySelector('.collection-carousel__viewport--active');
+      if (activeViewport) {
+        initEmbla(activeViewport);
+      }
+
+      tabs.forEach(function (tab) {
+        tab.addEventListener('click', function () {
+          tabs.forEach(function (t) { t.classList.remove('collection-carousel__tab--active'); });
+          tab.classList.add('collection-carousel__tab--active');
+          var index = tab.getAttribute('data-tab-index');
+          viewports.forEach(function (v) {
+            v.classList.remove('collection-carousel__viewport--active');
+          });
+          var target = section.querySelector('[data-tab-track="' + index + '"]');
+          if (target) {
+            target.classList.add('collection-carousel__viewport--active');
+            initEmbla(target);
+          }
+        });
+      });
+
+      prevBtn.addEventListener('click', function () {
+        if (activeEmbla) activeEmbla.scrollPrev();
+      });
+      nextBtn.addEventListener('click', function () {
+        if (activeEmbla) activeEmbla.scrollNext();
+      });
     }
 
-    tabs.forEach(function (tab) {
-      tab.addEventListener('click', function () {
-        tabs.forEach(function (t) { t.classList.remove('collection-carousel__tab--active'); });
-        tab.classList.add('collection-carousel__tab--active');
-        var index = tab.getAttribute('data-tab-index');
-        viewports.forEach(function (v) {
-          v.classList.remove('collection-carousel__viewport--active');
-        });
-        var target = section.querySelector('[data-tab-track="' + index + '"]');
-        if (target) {
-          target.classList.add('collection-carousel__viewport--active');
-          initEmbla(target);
-        }
-      });
-    });
-
-    prevBtn.addEventListener('click', function () {
-      if (activeEmbla) activeEmbla.scrollPrev();
-    });
-    nextBtn.addEventListener('click', function () {
-      if (activeEmbla) activeEmbla.scrollNext();
-    });
-  });
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', init);
+    } else {
+      init();
+    }
+  })();
 </script>
 
 {% schema %}
 {
   "name": "t:general.collection_carousel",
+  "settings": [
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Section heading",
+      "default": "New In"
+    }
+  ],
   "blocks": [
     {
       "type": "collection_tab",
@@ -398,12 +425,6 @@
           "type": "collection_tab",
           "settings": {
             "tab_label": "Main SS26"
-          }
-        },
-        {
-          "type": "collection_tab",
-          "settings": {
-            "tab_label": "Travel SS26"
           }
         }
       ]
