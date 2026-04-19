@@ -1,280 +1,310 @@
-{% assign menu = section.settings.menu %}
+{%- comment -%}
+  ───────────────────────────────────────────────────────────────
+  HEADER — León Moda
+  Navbar hardcoded to match imported collections from 8pm CSV.
+  Structure:
+    - NEW PRODUCTS (mega: Travel Capsule | Main Collections)
+    - SHOP          (mega: Clothing | Outerwear | Accessories)
+    - ARCHIVE       (direct link)
+    - SEARCH drawer (popular + recently viewed)
+  ───────────────────────────────────────────────────────────────
+{%- endcomment -%}
+
+{%- liquid
+  assign mega_np_1 = nil
+  assign mega_np_2 = nil
+  assign mega_shop_1 = nil
+  assign mega_shop_2 = nil
+  assign mega_shop_3 = nil
+  for block in section.blocks
+    if block.type == 'featured_image'
+      case block.settings.slot
+        when 'new-products-1'
+          assign mega_np_1 = block
+        when 'new-products-2'
+          assign mega_np_2 = block
+        when 'shop-1'
+          assign mega_shop_1 = block
+        when 'shop-2'
+          assign mega_shop_2 = block
+        when 'shop-3'
+          assign mega_shop_3 = block
+      endcase
+    endif
+  endfor
+-%}
 
 <header class="header full-width" data-header>
-  <!-- Desktop -->
+  {%- comment -%} ─── Desktop bar ─── {%- endcomment -%}
   <div class="header__desktop">
-    <nav class="header__left">
-      {% if menu != blank %}
-        {% for link in menu.links %}
-          {% if link.links.size > 0 %}
-            <button
-              class="header__link header__nav-trigger"
-              data-mega-trigger="{{ link.title | handleize }}"
-              aria-expanded="false"
-              aria-controls="mega-{{ link.title | handleize }}"
-            >
-              {{ link.title }}
-            </button>
-          {% else %}
-            <a href="{{ link.url }}" class="header__link">{{ link.title }}</a>
-          {% endif %}
-        {% endfor %}
-      {% else %}
-        <a href="/collections" class="header__link">{{ 'header.new_products' | t }}</a>
-        <a href="/collections" class="header__link">{{ 'header.shop' | t }}</a>
-        <a href="/collections/all" class="header__link">{{ 'header.archive' | t }}</a>
-      {% endif %}
+    <nav class="header__left" aria-label="Main navigation">
+      <button
+        class="header__link header__nav-trigger"
+        data-mega-trigger="new-products"
+        aria-expanded="false"
+        aria-controls="mega-new-products"
+      >
+        New Products
+      </button>
+      <a href="/collections/all" class="header__link">Shop</a>
+      <a href="/collections/archive" class="header__link">Archive</a>
     </nav>
 
     <div class="header__center">
-      <a href="{{ routes.root_url }}" class="header__logo">
+      <a href="{{ routes.root_url }}" class="header__logo" aria-label="{{ shop.name }}">
         <img src="{{ 'logo.svg' | asset_url }}" alt="{{ shop.name }}" class="header__logo-img">
       </a>
     </div>
 
     <div class="header__right">
-      <form action="{{ routes.search_url }}" method="get" class="header__search-form">
-        <label for="header-search" class="visually-hidden">{{ 'header.search' | t }}</label>
-        <input
-          type="search"
-          id="header-search"
-          name="q"
-          placeholder="{{ 'header.search' | t | upcase }}"
-          class="header__search-input"
-        >
-      </form>
-      <a href="{{ routes.account_url }}" class="header__link">{{ 'header.account' | t }}</a>
-      <a href="/pages/wishlist" class="header__link">{{ 'header.wishlist' | t }}</a>
-      <a href="{{ routes.cart_url }}" class="header__cart-badge">{{ cart.item_count }}</a>
+      <button class="header__link header__search-trigger" data-search-open aria-label="Open search">
+        Search
+      </button>
+      <a href="{{ routes.account_url }}" class="header__link">Account</a>
+      <a href="/pages/wishlist" class="header__link">Wishlist</a>
+      <a href="{{ routes.cart_url }}" class="header__cart-badge" aria-label="Cart with {{ cart.item_count }} items">
+        {{ cart.item_count }}
+      </a>
     </div>
   </div>
 
-  <!-- Mega menus -->
-  {% if menu != blank %}
-    {% for link in menu.links %}
-      {% if link.links.size > 0 %}
-        {% assign mega_handle = link.title | handleize %}
+  {%- comment -%} ─── Mega: NEW PRODUCTS ─── {%- endcomment -%}
+  <div class="mega" id="mega-new-products" data-mega="new-products" aria-hidden="true">
+    <div class="mega__panel">
+      <div class="mega__inner mega__inner--five">
+        <div class="mega__links">
+          <div class="mega__col">
+            <a href="/collections/travel-capsule" class="mega__col-heading mega__col-heading--link">
+              Travel Capsule
+            </a>
+            <p class="mega__col-kicker">The pieces that travel with you.</p>
+            <ul class="mega__col-list">
+              <li><a href="/collections/travel-capsule" class="mega__col-link">Shop All Travel</a></li>
+              <li><a href="/collections/travel-capsule" class="mega__col-link">Travel SS26</a></li>
+            </ul>
+          </div>
 
-        {% comment %} Find matching block for this menu item {% endcomment %}
-        {% assign mega_block = nil %}
-        {% for block in section.blocks %}
-          {% if block.type == 'mega_menu' %}
-            {% if block.settings.menu_item == link.title %}
-              {% assign mega_block = block %}
-            {% endif %}
-          {% endif %}
-        {% endfor %}
+          <div class="mega__col">
+            <a href="/collections/main-ss26" class="mega__col-heading mega__col-heading--link">
+              Main Collections
+            </a>
+            <p class="mega__col-kicker">The season's defining silhouettes.</p>
+            <ul class="mega__col-list">
+              <li><a href="/collections/new-in" class="mega__col-link">New In</a></li>
+              <li><a href="/collections/main-ss26" class="mega__col-link">Main SS26</a></li>
+              <li><a href="/collections/archive" class="mega__col-link">Archive Sale</a></li>
+            </ul>
+          </div>
 
-        <div
-          class="mega"
-          id="mega-{{ mega_handle }}"
-          data-mega="{{ mega_handle }}"
-          aria-hidden="true"
-        >
-          <div class="mega__overlay" data-mega-overlay></div>
-          <div class="mega__panel">
-            <div class="mega__inner">
-              <!-- Link columns -->
-              <div class="mega__links">
-                {% for child in link.links %}
-                  <div class="mega__col">
-                    {% if child.links.size > 0 %}
-                      <span class="mega__col-heading">{{ child.title }}</span>
-                      <ul class="mega__col-list">
-                        {% for grandchild in child.links %}
-                          <li>
-                            <a href="{{ grandchild.url }}" class="mega__col-link">{{ grandchild.title }}</a>
-                          </li>
-                        {% endfor %}
-                      </ul>
-                    {% else %}
-                      <a href="{{ child.url }}" class="mega__col-heading mega__col-heading--link">{{ child.title }}</a>
-                    {% endif %}
-                  </div>
-                {% endfor %}
+          <div class="mega__col">
+            <span class="mega__col-heading">Clothing</span>
+            <ul class="mega__col-list">
+              <li><a href="/collections/abiti" class="mega__col-link">Dresses</a></li>
+              <li><a href="/collections/bluse" class="mega__col-link">Blouses</a></li>
+              <li><a href="/collections/camicie" class="mega__col-link">Shirts</a></li>
+              <li><a href="/collections/t-shirts" class="mega__col-link">T-shirts</a></li>
+              <li><a href="/collections/top" class="mega__col-link">Tops</a></li>
+              <li><a href="/collections/maglie" class="mega__col-link">Knitwear</a></li>
+              <li><a href="/collections/gonne" class="mega__col-link">Skirts</a></li>
+              <li><a href="/collections/pantaloni" class="mega__col-link">Pants</a></li>
+              <li><a href="/collections/shorts" class="mega__col-link">Shorts</a></li>
+              <li><a href="/collections/tute" class="mega__col-link">Jumpsuits</a></li>
+            </ul>
+          </div>
 
-                <div class="mega__col mega__col--view-all">
-                  <a href="{{ link.url }}" class="mega__view-all">
-                    {{ 'header.view_all' | t }} {{ link.title }}
-                    <span class="mega__view-all-arrow">&rarr;</span>
-                  </a>
-                </div>
-              </div>
+          <div class="mega__col">
+            <span class="mega__col-heading">Outerwear</span>
+            <ul class="mega__col-list">
+              <li><a href="/collections/capispalla" class="mega__col-link">All Outerwear</a></li>
+              <li><a href="/collections/cappotti" class="mega__col-link">Coats</a></li>
+              <li><a href="/collections/giacche" class="mega__col-link">Jackets</a></li>
+              <li><a href="/collections/giubbotti" class="mega__col-link">Bombers</a></li>
+              <li><a href="/collections/cardigans" class="mega__col-link">Cardigans</a></li>
+              <li><a href="/collections/gilet" class="mega__col-link">Vests</a></li>
+              <li><a href="/collections/felpe" class="mega__col-link">Sweatshirts</a></li>
+            </ul>
+          </div>
 
-              <!-- Featured image (from block settings) -->
-              {% if mega_block != nil %}
-                <div class="mega__featured">
-                  {% if mega_block.settings.featured_image != blank %}
-                    <a
-                      href="{{ mega_block.settings.featured_link | default: link.url }}"
-                      class="mega__featured-link"
-                      {{ mega_block.shopify_attributes }}
-                    >
-                      <div class="mega__featured-image-wrap">
-                        {{ mega_block.settings.featured_image | image_url: width: 600, height: 800, crop: 'center' | image_tag:
-                          class: 'mega__featured-image',
-                          loading: 'lazy'
-                        }}
-                      </div>
-                      {% if mega_block.settings.featured_caption != blank %}
-                        <span class="mega__featured-caption">{{ mega_block.settings.featured_caption }}</span>
-                      {% endif %}
-                    </a>
-                  {% endif %}
-
-                  {% if mega_block.settings.featured_image_2 != blank %}
-                    <a
-                      href="{{ mega_block.settings.featured_link_2 | default: link.url }}"
-                      class="mega__featured-link"
-                    >
-                      <div class="mega__featured-image-wrap">
-                        {{ mega_block.settings.featured_image_2 | image_url: width: 600, height: 800, crop: 'center' | image_tag:
-                          class: 'mega__featured-image',
-                          loading: 'lazy'
-                        }}
-                      </div>
-                      {% if mega_block.settings.featured_caption_2 != blank %}
-                        <span class="mega__featured-caption">{{ mega_block.settings.featured_caption_2 }}</span>
-                      {% endif %}
-                    </a>
-                  {% endif %}
-                </div>
-              {% endif %}
-            </div>
+          <div class="mega__col">
+            <span class="mega__col-heading">Accessories</span>
+            <ul class="mega__col-list">
+              <li><a href="/collections/accessori-vari" class="mega__col-link">All Accessories</a></li>
+            </ul>
           </div>
         </div>
-      {% endif %}
-    {% endfor %}
-  {% endif %}
 
-  <!-- Mobile bar -->
+        <div class="mega__featured">
+          {%- render 'mega-decor' -%}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  {%- comment -%} ─── Mobile bar ─── {%- endcomment -%}
   <div class="header__mobile">
-    <button class="header__link header__mobile-menu-btn" data-mobile-open aria-label="{{ 'header.menu' | t }}">
-      {{ 'header.menu' | t }}
+    <button class="header__link header__mobile-menu-btn" data-mobile-open aria-label="Open menu">
+      Menu
     </button>
-    <a href="{{ routes.root_url }}" class="header__logo header__logo--mobile">
+    <a href="{{ routes.root_url }}" class="header__logo header__logo--mobile" aria-label="{{ shop.name }}">
       <img src="{{ 'logo.svg' | asset_url }}" alt="{{ shop.name }}" class="header__logo-img header__logo-img--mobile">
     </a>
-    <a href="{{ routes.cart_url }}" class="header__cart-link">
-      <span class="header__link">{{ 'header.cart' | t }}</span>
+    <a href="{{ routes.cart_url }}" class="header__cart-link" aria-label="Cart with {{ cart.item_count }} items">
       <span class="header__cart-badge">{{ cart.item_count }}</span>
     </a>
   </div>
 </header>
 
-<!-- Mobile menu dialog -->
-<dialog class="mobile-menu" scroll-lock data-mobile-menu>
+{%- comment -%} ─── Global mega overlay (outside header to escape transform containing block) ─── {%- endcomment -%}
+<div class="mega-backdrop" data-mega-overlay aria-hidden="true"></div>
+
+{%- comment -%} ─── Search drawer ─── {%- endcomment -%}
+<dialog class="search-drawer" scroll-lock data-search-drawer aria-label="Search">
+  <div class="search-drawer__inner">
+    <form action="{{ routes.search_url }}" method="get" class="search-drawer__form" role="search">
+      <div class="search-drawer__form-row">
+        <label for="search-drawer-input" class="visually-hidden">Search</label>
+        <input
+          type="search"
+          id="search-drawer-input"
+          name="q"
+          placeholder="Search"
+          class="search-drawer__input"
+          autocomplete="off"
+          data-search-input
+        >
+        <button type="button" class="search-drawer__close" data-search-close aria-label="Close search">
+          Close <span aria-hidden="true">×</span>
+        </button>
+      </div>
+    </form>
+
+    <div class="search-drawer__body">
+      <section class="search-drawer__section">
+        <h3 class="search-drawer__heading">Popular Searches:</h3>
+        <ul class="search-drawer__tag-list">
+          <li><a href="{{ routes.search_url }}?q=dress" class="search-drawer__tag">Dresses</a></li>
+          <li><a href="{{ routes.search_url }}?q=jacket" class="search-drawer__tag">Jackets</a></li>
+          <li><a href="{{ routes.search_url }}?q=shirt" class="search-drawer__tag">Shirts</a></li>
+          <li><a href="{{ routes.search_url }}?q=pants" class="search-drawer__tag">Pants</a></li>
+          <li><a href="{{ routes.search_url }}?q=travel" class="search-drawer__tag">Travel</a></li>
+          <li><a href="{{ routes.search_url }}?q=new+in" class="search-drawer__tag">New In</a></li>
+        </ul>
+      </section>
+
+      <section class="search-drawer__section" data-recent-section hidden>
+        <h3 class="search-drawer__heading">Recently Viewed</h3>
+        <div class="search-drawer__recent" data-recent-products></div>
+      </section>
+
+      <section class="search-drawer__section search-drawer__section--empty" data-empty-section>
+        <p class="search-drawer__empty-text">
+          Start browsing to see recently viewed items here.
+        </p>
+      </section>
+    </div>
+  </div>
+</dialog>
+
+{%- comment -%} ─── Mobile menu ─── {%- endcomment -%}
+<dialog class="mobile-menu" scroll-lock data-mobile-menu aria-label="Menu">
   <div class="mobile-menu__inner">
     <div class="mobile-menu__top">
-      <button class="header__link mobile-menu__close-btn" data-mobile-close>
-        {{ 'header.close' | t }} &times;
+      <button class="header__link mobile-menu__close-btn" data-mobile-close aria-label="Close menu">
+        Close <span aria-hidden="true">×</span>
       </button>
-      <a href="{{ routes.account_url }}" class="header__link">{{ 'header.account' | t }}</a>
-      <a href="{{ routes.cart_url }}" class="header__cart-link">
-        <span class="header__link">{{ 'header.cart' | t }}</span>
+      <a href="{{ routes.account_url }}" class="header__link">Account</a>
+      <a href="{{ routes.cart_url }}" class="header__cart-link" aria-label="Cart">
+        <span class="header__link">Cart</span>
         <span class="header__cart-badge">{{ cart.item_count }}</span>
       </a>
     </div>
 
-    <form action="{{ routes.search_url }}" method="get" class="mobile-menu__search">
-      <label for="mobile-search" class="visually-hidden">{{ 'header.search' | t }}</label>
+    <form action="{{ routes.search_url }}" method="get" class="mobile-menu__search" role="search">
+      <label for="mobile-search-input" class="visually-hidden">Search</label>
       <input
         type="search"
-        id="mobile-search"
+        id="mobile-search-input"
         name="q"
-        placeholder="{{ 'header.search' | t | upcase }}"
+        placeholder="Search"
         class="mobile-menu__search-input"
+        autocomplete="off"
       >
     </form>
 
-    <nav class="mobile-menu__nav">
-      <!-- Root panel -->
+    <nav class="mobile-menu__nav" aria-label="Main navigation">
       <div class="mobile-menu__panel mobile-menu__panel--active" data-panel="root">
-        {% if menu != blank %}
-          <ul class="mobile-menu__list">
-            {% for link in menu.links %}
-              <li>
-                {% if link.links.size > 0 %}
-                  <button class="mobile-menu__link" data-go-to="{{ link.title | handleize }}">
-                    {{ link.title }}
-                    <span class="mobile-menu__chevron">&#x203A;</span>
-                  </button>
-                {% else %}
-                  <a href="{{ link.url }}" class="mobile-menu__link">{{ link.title }}</a>
-                {% endif %}
-              </li>
-            {% endfor %}
-          </ul>
-        {% else %}
-          <ul class="mobile-menu__list">
-            <li><a href="/collections" class="mobile-menu__link">{{ 'header.new_products' | t }}</a></li>
-            <li><a href="/collections" class="mobile-menu__link">{{ 'header.shop' | t }}</a></li>
-            <li><a href="/collections/all" class="mobile-menu__link">{{ 'header.archive' | t }}</a></li>
-          </ul>
-        {% endif %}
+        <ul class="mobile-menu__list">
+          <li>
+            <button class="mobile-menu__link" data-go-to="new-products">
+              New Products <span class="mobile-menu__chevron" aria-hidden="true">›</span>
+            </button>
+          </li>
+          <li>
+            <button class="mobile-menu__link" data-go-to="shop">
+              Shop <span class="mobile-menu__chevron" aria-hidden="true">›</span>
+            </button>
+          </li>
+          <li>
+            <a href="/collections/archive" class="mobile-menu__link">Archive</a>
+          </li>
+        </ul>
       </div>
 
-      <!-- Level 1 panels -->
-      {% if menu != blank %}
-        {% for link in menu.links %}
-          {% if link.links.size > 0 %}
-            <div class="mobile-menu__panel" data-panel="{{ link.title | handleize }}">
-              <button class="mobile-menu__back" data-go-back>
-                &#x2039; {{ 'header.back_to' | t }} {{ link.title }}
-              </button>
-              <ul class="mobile-menu__list">
-                {% for child in link.links %}
-                  <li>
-                    {% if child.links.size > 0 %}
-                      <button class="mobile-menu__link" data-go-to="{{ link.title | handleize }}--{{ child.title | handleize }}">
-                        {{ child.title }}
-                        <span class="mobile-menu__chevron">&#x203A;</span>
-                      </button>
-                    {% else %}
-                      <a href="{{ child.url }}" class="mobile-menu__link">{{ child.title }}</a>
-                    {% endif %}
-                  </li>
-                {% endfor %}
-              </ul>
-            </div>
+      <div class="mobile-menu__panel" data-panel="new-products">
+        <button class="mobile-menu__back" data-go-back>‹ Back</button>
+        <h4 class="mobile-menu__group">Travel Capsule</h4>
+        <ul class="mobile-menu__list">
+          <li><a href="/collections/travel-capsule" class="mobile-menu__link mobile-menu__link--sub">Shop All Travel</a></li>
+        </ul>
+        <h4 class="mobile-menu__group">Main Collections</h4>
+        <ul class="mobile-menu__list">
+          <li><a href="/collections/new-in" class="mobile-menu__link mobile-menu__link--sub">New In</a></li>
+          <li><a href="/collections/main-ss26" class="mobile-menu__link mobile-menu__link--sub">Main SS26</a></li>
+          <li><a href="/collections/archive" class="mobile-menu__link mobile-menu__link--sub">Archive Sale</a></li>
+        </ul>
+      </div>
 
-            <!-- Level 2 panels -->
-            {% for child in link.links %}
-              {% if child.links.size > 0 %}
-                <div class="mobile-menu__panel" data-panel="{{ link.title | handleize }}--{{ child.title | handleize }}">
-                  <button class="mobile-menu__back" data-go-back>
-                    &#x2039; {{ 'header.back_to' | t }} {{ child.title }}
-                  </button>
-                  <ul class="mobile-menu__list">
-                    {% for grandchild in child.links %}
-                      <li>
-                        <a href="{{ grandchild.url }}" class="mobile-menu__link">{{ grandchild.title }}</a>
-                      </li>
-                    {% endfor %}
-                  </ul>
-                </div>
-              {% endif %}
-            {% endfor %}
-          {% endif %}
-        {% endfor %}
-      {% endif %}
+      <div class="mobile-menu__panel" data-panel="shop">
+        <button class="mobile-menu__back" data-go-back>‹ Back</button>
+        <h4 class="mobile-menu__group">Clothing</h4>
+        <ul class="mobile-menu__list">
+          <li><a href="/collections/abiti" class="mobile-menu__link mobile-menu__link--sub">Dresses</a></li>
+          <li><a href="/collections/bluse" class="mobile-menu__link mobile-menu__link--sub">Blouses</a></li>
+          <li><a href="/collections/camicie" class="mobile-menu__link mobile-menu__link--sub">Shirts</a></li>
+          <li><a href="/collections/t-shirts" class="mobile-menu__link mobile-menu__link--sub">T-shirts</a></li>
+          <li><a href="/collections/top" class="mobile-menu__link mobile-menu__link--sub">Tops</a></li>
+          <li><a href="/collections/maglie" class="mobile-menu__link mobile-menu__link--sub">Knitwear</a></li>
+          <li><a href="/collections/gonne" class="mobile-menu__link mobile-menu__link--sub">Skirts</a></li>
+          <li><a href="/collections/pantaloni" class="mobile-menu__link mobile-menu__link--sub">Pants</a></li>
+          <li><a href="/collections/shorts" class="mobile-menu__link mobile-menu__link--sub">Shorts</a></li>
+          <li><a href="/collections/tute" class="mobile-menu__link mobile-menu__link--sub">Jumpsuits</a></li>
+        </ul>
+        <h4 class="mobile-menu__group">Outerwear</h4>
+        <ul class="mobile-menu__list">
+          <li><a href="/collections/capispalla" class="mobile-menu__link mobile-menu__link--sub">All Outerwear</a></li>
+          <li><a href="/collections/cappotti" class="mobile-menu__link mobile-menu__link--sub">Coats</a></li>
+          <li><a href="/collections/giacche" class="mobile-menu__link mobile-menu__link--sub">Jackets</a></li>
+          <li><a href="/collections/giubbotti" class="mobile-menu__link mobile-menu__link--sub">Bombers</a></li>
+          <li><a href="/collections/cardigans" class="mobile-menu__link mobile-menu__link--sub">Cardigans</a></li>
+          <li><a href="/collections/gilet" class="mobile-menu__link mobile-menu__link--sub">Vests</a></li>
+          <li><a href="/collections/felpe" class="mobile-menu__link mobile-menu__link--sub">Sweatshirts</a></li>
+        </ul>
+        <h4 class="mobile-menu__group">Accessories</h4>
+        <ul class="mobile-menu__list">
+          <li><a href="/collections/accessori-vari" class="mobile-menu__link mobile-menu__link--sub">All Accessories</a></li>
+        </ul>
+      </div>
     </nav>
 
     <div class="mobile-menu__footer">
-      <span class="mobile-menu__footer-item">{{ 'header.shipping_info' | t }}</span>
-      <a href="/pages/wishlist" class="mobile-menu__footer-item">{{ 'header.wishlist' | t }}</a>
-      <a href="{{ routes.account_url }}" class="mobile-menu__footer-item">{{ 'header.register' | t }}</a>
-      <a href="/pages/contact" class="mobile-menu__footer-item">{{ 'header.contacts' | t }}</a>
-    </div>
-
-    <div class="mobile-menu__watermark" aria-hidden="true">
-      <img src="{{ 'logo.svg' | asset_url }}" alt="" class="mobile-menu__watermark-img">
+      <a href="/pages/wishlist" class="mobile-menu__footer-item">Wishlist</a>
+      <a href="/pages/contact" class="mobile-menu__footer-item">Contact</a>
     </div>
   </div>
 </dialog>
 
 {% stylesheet %}
-  /* === Shared === */
+  /* ─── Shared utilities ─────────────────────────────────────── */
   .visually-hidden {
     position: absolute;
     width: 1px;
@@ -292,13 +322,94 @@
     color: var(--color-foreground);
     font-size: 0.73rem;
     text-transform: uppercase;
-    letter-spacing: 0.05em;
+    letter-spacing: 0.06em;
     font-weight: 500;
     background: none;
     border: none;
     cursor: pointer;
     font-family: inherit;
     padding: 0;
+    transition: opacity 0.2s;
+  }
+
+  .header__link:hover {
+    opacity: 0.6;
+  }
+
+  /* ─── Header ─────────────────────────────────────────────────── */
+  .shopify-section:has(> .header),
+  .header-section-sticky {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    align-self: start;
+    transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+    will-change: transform;
+  }
+
+  .shopify-section:has(> .header[data-mega-open]),
+  .header-section-sticky[data-mega-open] {
+    z-index: 200;
+  }
+
+  .header {
+    background-color: var(--color-background);
+    border-bottom: 1px solid #e5e5e5;
+    --header-height: 3rem;
+  }
+
+  .header__desktop {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    align-items: center;
+    padding: 0 var(--page-margin);
+    height: 3rem;
+    gap: 1rem;
+    position: relative;
+    z-index: 3;
+    background-color: var(--color-background);
+  }
+
+  .header__left {
+    display: flex;
+    gap: 1.75rem;
+    align-items: center;
+    height: 100%;
+  }
+
+  .header__right {
+    display: flex;
+    gap: 1.75rem;
+    align-items: center;
+    justify-self: end;
+  }
+
+  .header__nav-trigger {
+    height: 100%;
+    display: flex;
+    align-items: center;
+    position: relative;
+  }
+
+  .header__nav-trigger::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background-color: var(--color-foreground);
+    transform: scaleX(0);
+    transform-origin: center;
+    transition: transform 0.25s ease;
+  }
+
+  .header__nav-trigger--active::after {
+    transform: scaleX(1);
+  }
+
+  .header__center {
+    justify-self: center;
   }
 
   .header__logo {
@@ -316,245 +427,166 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 1.75rem;
-    height: 1.75rem;
+    min-width: 1.5rem;
+    height: 1.5rem;
+    padding: 0 6px;
     border: 1px solid var(--color-foreground);
     text-decoration: none;
     color: var(--color-foreground);
-    font-size: 0.8rem;
+    font-size: 0.7rem;
     flex-shrink: 0;
   }
 
-  .header__cart-link {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    text-decoration: none;
-    color: var(--color-foreground);
-  }
-
-  /* === Desktop header === */
-  .header {
-    position: relative;
-    border-bottom: 1px solid #ccc;
-    z-index: 100;
-  }
-
-  .header__desktop {
-    display: grid;
-    grid-template-columns: 1fr auto 1fr;
-    align-items: center;
-    padding: 0 var(--page-margin);
-    height: 3rem;
-    gap: 1rem;
-  }
-
-  .header__left {
-    display: flex;
-    gap: 1.5rem;
-    align-items: center;
-    height: 100%;
-  }
-
-  .header__nav-trigger {
-    height: 100%;
-    display: flex;
-    align-items: center;
-    position: relative;
-  }
-
-  .header__nav-trigger::after {
-    content: '';
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    height: 2px;
-    background-color: var(--color-foreground);
-    transform: scaleX(0);
-    transition: transform 0.2s ease;
-  }
-
-  .header__nav-trigger--active::after {
-    transform: scaleX(1);
-  }
-
-  .header__center {
-    justify-self: center;
-  }
-
-  .header__right {
-    display: flex;
-    gap: 1.5rem;
-    align-items: center;
-    justify-self: end;
-  }
-
-  .header__search-form {
-    display: flex;
-    align-items: center;
-  }
-
-  .header__search-input {
-    border: none;
-    border-bottom: 1px solid var(--color-foreground);
-    background: none;
-    font-size: 0.73rem;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    padding: 4px 0;
-    width: 120px;
-    outline: none;
-    color: var(--color-foreground);
-    font-family: inherit;
-    border-radius: 0;
-  }
-
-  .header__search-input::placeholder {
-    color: var(--color-foreground);
-    opacity: 0.6;
-  }
-
-  /* === Mega menu === */
+  /* ─── Mega menu ─────────────────────────────────────────────── */
   .mega {
     position: absolute;
     top: 100%;
     left: 0;
     right: 0;
-    z-index: 200;
+    z-index: 2;
     pointer-events: none;
-    visibility: hidden;
+    overflow: hidden;
+    max-height: 0;
+    transition: max-height 0.45s cubic-bezier(0.22, 1, 0.36, 1);
   }
 
   .mega--active {
     pointer-events: auto;
-    visibility: visible;
+    max-height: 80vh;
   }
 
-  .mega__overlay {
+  .mega-backdrop {
     position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
+    inset: 0;
     background: rgba(0, 0, 0, 0);
-    transition: background 0.3s ease;
-    z-index: -1;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.35s ease, background 0.35s ease, visibility 0s linear 0.35s;
+    z-index: 50;
+    pointer-events: none;
   }
 
-  .mega--active .mega__overlay {
-    background: rgba(0, 0, 0, 0.25);
+  .mega-backdrop--active {
+    background: rgba(0, 0, 0, 0.3);
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+    transition: opacity 0.35s ease, background 0.35s ease, visibility 0s linear 0s;
   }
 
   .mega__panel {
     background: var(--color-background);
-    border-bottom: 1px solid #ccc;
-    transform: translateY(-8px);
-    opacity: 0;
-    transition: transform 0.3s ease, opacity 0.25s ease;
+    border-bottom: 1px solid #e5e5e5;
+    position: relative;
+    transform: translateY(-100%);
+    transition: transform 0.45s cubic-bezier(0.22, 1, 0.36, 1);
   }
 
   .mega--active .mega__panel {
     transform: translateY(0);
-    opacity: 1;
   }
+
 
   .mega__inner {
     display: grid;
-    grid-template-columns: 1fr auto;
     gap: 48px;
-    padding: 40px var(--page-margin);
-    max-width: var(--page-width);
-    margin: 0 auto;
+    padding: 40px var(--page-margin) 56px;
+  }
+
+  .mega__inner--two {
+    grid-template-columns: 1fr auto;
+  }
+
+  .mega__inner--three {
+    grid-template-columns: 1fr auto;
+  }
+
+  .mega__inner--five {
+    grid-template-columns: 1fr auto;
   }
 
   .mega__links {
-    display: flex;
-    gap: 48px;
-    flex-wrap: wrap;
+    display: grid;
+    gap: 40px;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    max-width: none;
   }
 
   .mega__col {
     display: flex;
     flex-direction: column;
-    gap: 0.5rem;
-    min-width: 140px;
-  }
-
-  .mega__col--view-all {
-    align-self: flex-end;
-    margin-top: auto;
   }
 
   .mega__col-heading {
-    font-size: 0.73rem;
-    font-weight: 700;
+    font-size: 0.75rem;
+    font-weight: 600;
     text-transform: uppercase;
-    letter-spacing: 0.05em;
+    letter-spacing: 0.08em;
     color: var(--color-foreground);
-    margin-bottom: 0.5rem;
-  }
-
-  .mega__col-heading--link {
+    margin-bottom: 12px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid #e5e5e5;
     text-decoration: none;
     transition: opacity 0.2s;
   }
 
   .mega__col-heading--link:hover {
-    opacity: 0.7;
+    opacity: 0.6;
+  }
+
+  .mega__col-kicker {
+    font-size: 0.72rem;
+    color: #888;
+    margin: 0 0 16px;
+    letter-spacing: 0.02em;
+    line-height: 1.5;
   }
 
   .mega__col-list {
     list-style: none;
     padding: 0;
+    margin: 0;
     display: flex;
     flex-direction: column;
-    gap: 0.5rem;
+    gap: 8px;
   }
 
   .mega__col-link {
-    font-size: 0.73rem;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
+    font-size: 0.78rem;
+    text-transform: none;
+    letter-spacing: 0.01em;
     text-decoration: none;
     color: var(--color-foreground);
     font-weight: 400;
     transition: opacity 0.2s;
+    display: inline-block;
   }
 
   .mega__col-link:hover {
-    opacity: 0.6;
+    opacity: 0.5;
   }
 
-  .mega__view-all {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    font-size: 0.73rem;
-    letter-spacing: 0.05em;
-    text-transform: uppercase;
-    text-decoration: none;
-    color: var(--color-foreground);
-    font-weight: 600;
-    border-bottom: 1px solid var(--color-foreground);
-    padding-bottom: 2px;
-    transition: opacity 0.2s;
-  }
-
-  .mega__view-all:hover {
-    opacity: 0.7;
-  }
-
-  .mega__view-all-arrow {
-    font-size: 1rem;
-    line-height: 1;
-  }
-
-  /* Featured images */
+  /* Featured images in mega */
   .mega__featured {
     display: flex;
-    gap: 2px;
+    gap: 8px;
     flex-shrink: 0;
+  }
+
+  .mega__decor {
+    display: flex;
+    gap: 8px;
+    flex-shrink: 0;
+    height: 400px;
+  }
+
+  .mega__decor-img {
+    height: 100%;
+    width: auto;
+    object-fit: cover;
+    display: block;
+    pointer-events: none;
+    user-select: none;
   }
 
   .mega__featured-link {
@@ -562,13 +594,18 @@
     flex-direction: column;
     text-decoration: none;
     color: var(--color-foreground);
-    width: 220px;
+    width: 200px;
+  }
+
+  .mega__featured--three .mega__featured-link {
+    width: 180px;
   }
 
   .mega__featured-image-wrap {
     aspect-ratio: 3 / 4;
     overflow: hidden;
     background-color: #f0f0f0;
+    position: relative;
   }
 
   .mega__featured-image {
@@ -579,40 +616,220 @@
   }
 
   .mega__featured-link:hover .mega__featured-image {
-    transform: scale(1.03);
+    transform: scale(1.04);
+  }
+
+  .mega__featured-placeholder {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    text-align: center;
+  }
+
+  .mega__featured-placeholder span {
+    font-size: 0.7rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: #999;
+    border: 1px dashed #ccc;
+    padding: 8px 12px;
+    line-height: 1.4;
   }
 
   .mega__featured-caption {
     display: block;
     font-size: 0.7rem;
-    letter-spacing: 0.05em;
+    letter-spacing: 0.06em;
     text-transform: uppercase;
-    padding: 10px 0;
+    padding: 10px 0 0;
   }
 
-  /* === Mobile bar (hidden on desktop) === */
+  /* ─── Search drawer ─────────────────────────────────────────── */
+  .search-drawer {
+    position: fixed;
+    top: 0;
+    right: 0;
+    width: min(560px, 100%);
+    height: 100dvh;
+    max-width: 100%;
+    max-height: 100%;
+    margin: 0;
+    padding: 0;
+    border: none;
+    background: var(--color-background);
+    color: var(--color-foreground);
+    transform: translateX(100%);
+    transition: transform 0.35s ease;
+    z-index: 1000;
+  }
+
+  .search-drawer[open] {
+    transform: translateX(0);
+  }
+
+  .search-drawer::backdrop {
+    background: rgba(0, 0, 0, 0.25);
+  }
+
+  .search-drawer__inner {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    padding: 0 1.5rem;
+  }
+
+  .search-drawer__form {
+    flex-shrink: 0;
+    padding: 1.25rem 0;
+    border-bottom: 1px solid var(--color-foreground);
+  }
+
+  .search-drawer__form-row {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+  }
+
+  .search-drawer__input {
+    flex: 1;
+    border: none;
+    background: none;
+    font-size: 1rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    padding: 8px 0;
+    outline: none;
+    color: var(--color-foreground);
+    font-family: inherit;
+    font-weight: 500;
+    border-radius: 0;
+  }
+
+  .search-drawer__input::placeholder {
+    color: var(--color-foreground);
+    opacity: 0.4;
+  }
+
+  .search-drawer__close {
+    background: #f0f0f0;
+    border: none;
+    padding: 8px 16px;
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    cursor: pointer;
+    color: var(--color-foreground);
+    font-family: inherit;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    flex-shrink: 0;
+  }
+
+  .search-drawer__body {
+    flex: 1;
+    overflow-y: auto;
+    padding: 1.5rem 0 2rem;
+  }
+
+  .search-drawer__section {
+    margin-bottom: 2rem;
+  }
+
+  .search-drawer__heading {
+    font-size: 0.75rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    font-weight: 500;
+    margin: 0 0 1rem;
+    color: var(--color-foreground);
+  }
+
+  .search-drawer__tag-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .search-drawer__tag {
+    font-size: 0.95rem;
+    text-decoration: none;
+    color: var(--color-foreground);
+    transition: opacity 0.2s;
+  }
+
+  .search-drawer__tag:hover {
+    opacity: 0.6;
+  }
+
+  .search-drawer__recent {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+  }
+
+  .search-drawer__recent-card {
+    display: flex;
+    flex-direction: column;
+    text-decoration: none;
+    color: var(--color-foreground);
+    position: relative;
+  }
+
+  .search-drawer__recent-img-wrap {
+    aspect-ratio: 3 / 4;
+    overflow: hidden;
+    background-color: #f0f0f0;
+    margin-bottom: 8px;
+  }
+
+  .search-drawer__recent-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .search-drawer__recent-title {
+    font-size: 0.78rem;
+    letter-spacing: 0.02em;
+    display: block;
+  }
+
+  .search-drawer__recent-price {
+    font-size: 0.78rem;
+    font-weight: 600;
+    margin-top: 2px;
+  }
+
+  .search-drawer__empty-text {
+    font-size: 0.85rem;
+    color: #999;
+    margin: 0;
+  }
+
+  /* ─── Mobile bar ─────────────────────────────────────────────── */
   .header__mobile {
     display: none;
   }
 
-  .header__mobile-menu-btn {
-    justify-self: start;
+  .header__cart-link {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    text-decoration: none;
+    color: var(--color-foreground);
+    justify-self: end;
   }
 
-  .header__logo--mobile {
-    justify-self: center;
-  }
-
-  .header__logo-img--mobile {
-    height: 2.5rem;
-  }
-
-  /* === Mobile breakpoint === */
-  @media (max-width: 768px) {
-    .header__desktop {
-      display: none;
-    }
-
+  /* ─── Responsive breakpoint ─────────────────────────────────── */
+  @media (max-width: 900px) {
+    .header__desktop,
     .mega {
       display: none !important;
     }
@@ -625,12 +842,24 @@
       height: 3.5rem;
     }
 
-    .header__mobile .header__cart-link {
-      justify-self: end;
+    .header__mobile-menu-btn {
+      justify-self: start;
+    }
+
+    .header__logo--mobile {
+      justify-self: center;
+    }
+
+    .header__logo-img--mobile {
+      height: 1.5rem;
+    }
+
+    .search-drawer {
+      width: 100%;
     }
   }
 
-  /* === Mobile menu dialog === */
+  /* ─── Mobile menu dialog ─────────────────────────────────────── */
   .mobile-menu {
     position: fixed;
     inset: 0;
@@ -655,7 +884,6 @@
     flex-direction: column;
     height: 100%;
     padding: 0 var(--page-margin);
-    position: relative;
     overflow: hidden;
   }
 
@@ -663,7 +891,7 @@
     display: grid;
     grid-template-columns: 1fr auto auto;
     align-items: center;
-    gap: 1.5rem;
+    gap: 1.25rem;
     height: 3.5rem;
     flex-shrink: 0;
   }
@@ -683,7 +911,7 @@
     width: 100%;
     border: none;
     background: none;
-    font-size: 0.73rem;
+    font-size: 0.9rem;
     text-transform: uppercase;
     letter-spacing: 0.05em;
     padding: 8px 0;
@@ -691,14 +919,14 @@
     color: var(--color-foreground);
     font-family: inherit;
     font-weight: 500;
+    border-radius: 0;
   }
 
   .mobile-menu__search-input::placeholder {
     color: var(--color-foreground);
-    opacity: 0.6;
+    opacity: 0.4;
   }
 
-  /* Panels */
   .mobile-menu__nav {
     position: relative;
     flex: 1;
@@ -709,7 +937,7 @@
     position: absolute;
     inset: 0;
     overflow-y: auto;
-    padding-top: 1rem;
+    padding-top: 0.5rem;
     transform: translateX(100%);
     transition: transform 0.3s ease;
   }
@@ -725,8 +953,7 @@
   .mobile-menu__list {
     list-style: none;
     padding: 0;
-    display: flex;
-    flex-direction: column;
+    margin: 0;
   }
 
   .mobile-menu__link {
@@ -734,8 +961,8 @@
     justify-content: space-between;
     align-items: center;
     width: 100%;
-    padding: 0.75rem 0;
-    font-size: 0.85rem;
+    padding: 14px 0;
+    font-size: 1rem;
     font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 0.05em;
@@ -745,6 +972,30 @@
     border: none;
     cursor: pointer;
     font-family: inherit;
+    text-align: left;
+  }
+
+  .mobile-menu__link--sub {
+    font-size: 0.92rem;
+    font-weight: 400;
+    text-transform: none;
+    letter-spacing: 0.01em;
+    padding: 10px 0;
+  }
+
+  .mobile-menu__group {
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: #999;
+    margin: 24px 0 4px;
+    font-weight: 500;
+    padding-bottom: 8px;
+    border-bottom: 1px solid #eee;
+  }
+
+  .mobile-menu__group:first-of-type {
+    margin-top: 12px;
   }
 
   .mobile-menu__chevron {
@@ -754,19 +1005,19 @@
 
   .mobile-menu__back {
     display: block;
-    width: 100%;
-    text-align: left;
     padding: 0.5rem 0 1rem;
-    font-size: 0.73rem;
-    letter-spacing: 0.05em;
-    color: #999;
+    font-size: 0.75rem;
+    letter-spacing: 0.06em;
+    color: #666;
     background: none;
     border: none;
     border-bottom: 1px solid #eee;
     cursor: pointer;
     font-family: inherit;
-    margin-bottom: 0.75rem;
+    margin-bottom: 0.5rem;
     text-transform: uppercase;
+    text-align: left;
+    width: 100%;
   }
 
   .mobile-menu__footer {
@@ -783,61 +1034,56 @@
     text-decoration: none;
     color: var(--color-foreground);
   }
-
-  .mobile-menu__watermark {
-    position: absolute;
-    bottom: 0;
-    right: 0;
-    pointer-events: none;
-    opacity: 0.05;
-  }
-
-  .mobile-menu__watermark-img {
-    height: 40vh;
-    width: auto;
-  }
 {% endstylesheet %}
 
 <script>
-  document.addEventListener('DOMContentLoaded', function () {
+  (function () {
     var header = document.querySelector('[data-header]');
-    var dialog = document.querySelector('[data-mobile-menu]');
     if (!header) return;
 
-    /* === Desktop mega menu === */
+    /* ─── Mega menus ─── */
     var triggers = header.querySelectorAll('[data-mega-trigger]');
     var megas = header.querySelectorAll('[data-mega]');
+    var backdrop = document.querySelector('.mega-backdrop');
+    if (backdrop && backdrop.parentElement !== document.body) {
+      document.body.appendChild(backdrop);
+    }
+    var headerSection = header.closest('.shopify-section') || header.parentElement;
+    if (headerSection) headerSection.classList.add('header-section-sticky');
     var closeTimeout = null;
     var activeMega = null;
 
+    function updateTopbarOffset() {
+      if (!headerSection || !header.hasAttribute('data-mega-open')) return;
+      if (!window.matchMedia('(min-width: 901px)').matches) return;
+      var topbar = document.querySelector('.topbar');
+      if (!topbar) return;
+      var offset = Math.max(0, topbar.getBoundingClientRect().bottom);
+      headerSection.style.transform = offset > 0 ? 'translateY(-' + offset + 'px)' : '';
+    }
+    window.addEventListener('scroll', updateTopbarOffset, { passive: true });
+
     function openMega(id) {
       clearTimeout(closeTimeout);
-
-      if (activeMega && activeMega.getAttribute('data-mega') !== id) {
-        activeMega.classList.remove('mega--active');
-        activeMega.setAttribute('aria-hidden', 'true');
-      }
-
-      var target = header.querySelector('[data-mega="' + id + '"]');
-      if (target) {
-        target.classList.add('mega--active');
-        target.setAttribute('aria-hidden', 'false');
-        activeMega = target;
-      }
-
-      triggers.forEach(function (t) {
-        t.classList.toggle(
-          'header__nav-trigger--active',
-          t.getAttribute('data-mega-trigger') === id
-        );
-        t.setAttribute(
-          'aria-expanded',
-          t.getAttribute('data-mega-trigger') === id ? 'true' : 'false'
-        );
+      megas.forEach(function (m) {
+        var match = m.getAttribute('data-mega') === id;
+        m.classList.toggle('mega--active', match);
+        m.setAttribute('aria-hidden', match ? 'false' : 'true');
+        if (match) activeMega = m;
       });
+      triggers.forEach(function (t) {
+        var match = t.getAttribute('data-mega-trigger') === id;
+        t.classList.toggle('header__nav-trigger--active', match);
+        t.setAttribute('aria-expanded', match ? 'true' : 'false');
+      });
+      header.setAttribute('data-mega-open', '');
+      if (headerSection) headerSection.setAttribute('data-mega-open', '');
+      if (backdrop) backdrop.classList.add('mega-backdrop--active');
+      updateTopbarOffset();
     }
 
-    function closeAllMegas() {
+    function closeAllMegas(delay) {
+      clearTimeout(closeTimeout);
       closeTimeout = setTimeout(function () {
         megas.forEach(function (m) {
           m.classList.remove('mega--active');
@@ -848,67 +1094,134 @@
           t.setAttribute('aria-expanded', 'false');
         });
         activeMega = null;
-      }, 150);
+        header.removeAttribute('data-mega-open');
+        header.style.transform = '';
+        if (headerSection) {
+          headerSection.removeAttribute('data-mega-open');
+          headerSection.style.transform = '';
+        }
+        if (backdrop) backdrop.classList.remove('mega-backdrop--active');
+      }, delay || 220);
     }
 
     triggers.forEach(function (trigger) {
-      trigger.addEventListener('mouseenter', function () {
-        openMega(trigger.getAttribute('data-mega-trigger'));
-      });
-      trigger.addEventListener('mouseleave', closeAllMegas);
-      trigger.addEventListener('click', function () {
+      trigger.addEventListener('click', function (e) {
+        e.stopPropagation();
         var id = trigger.getAttribute('data-mega-trigger');
         var target = header.querySelector('[data-mega="' + id + '"]');
-        if (target && target.classList.contains('mega--active')) {
-          closeAllMegas();
-        } else {
-          openMega(id);
-        }
+        if (target && target.classList.contains('mega--active')) closeAllMegas(0);
+        else openMega(id);
       });
     });
 
-    megas.forEach(function (mega) {
-      mega.querySelector('.mega__panel').addEventListener('mouseenter', function () {
-        clearTimeout(closeTimeout);
-      });
-      mega.querySelector('.mega__panel').addEventListener('mouseleave', closeAllMegas);
+    document.querySelectorAll('[data-mega-overlay]').forEach(function (overlay) {
+      overlay.addEventListener('click', function () { closeAllMegas(0); });
     });
 
-    /* Close on overlay click */
-    header.querySelectorAll('[data-mega-overlay]').forEach(function (overlay) {
-      overlay.addEventListener('click', function () {
-        clearTimeout(closeTimeout);
-        megas.forEach(function (m) {
-          m.classList.remove('mega--active');
-          m.setAttribute('aria-hidden', 'true');
-        });
-        triggers.forEach(function (t) {
-          t.classList.remove('header__nav-trigger--active');
-          t.setAttribute('aria-expanded', 'false');
-        });
-        activeMega = null;
-      });
-    });
-
-    /* Close on Escape */
     document.addEventListener('keydown', function (e) {
-      if (e.key === 'Escape' && activeMega) {
-        clearTimeout(closeTimeout);
-        megas.forEach(function (m) {
-          m.classList.remove('mega--active');
-          m.setAttribute('aria-hidden', 'true');
-        });
-        triggers.forEach(function (t) {
-          t.classList.remove('header__nav-trigger--active');
-          t.setAttribute('aria-expanded', 'false');
-        });
-        activeMega = null;
-      }
+      if (e.key === 'Escape' && activeMega) closeAllMegas(0);
     });
 
-    /* === Mobile menu === */
-    if (!dialog) return;
+    /* ─── Search drawer ─── */
+    var searchDrawer = document.querySelector('[data-search-drawer]');
+    var searchOpen = header.querySelector('[data-search-open]');
+    var searchClose = searchDrawer && searchDrawer.querySelector('[data-search-close]');
+    var searchInput = searchDrawer && searchDrawer.querySelector('[data-search-input]');
 
+    if (searchOpen && searchDrawer) {
+      searchOpen.addEventListener('click', function () {
+        searchDrawer.showModal();
+        renderRecentlyViewed();
+        setTimeout(function () { searchInput && searchInput.focus(); }, 100);
+      });
+    }
+    if (searchClose && searchDrawer) {
+      searchClose.addEventListener('click', function () { searchDrawer.close(); });
+    }
+    if (searchDrawer) {
+      searchDrawer.addEventListener('click', function (e) {
+        if (e.target === searchDrawer) searchDrawer.close();
+      });
+    }
+
+    /* ─── Recently viewed (localStorage) ─── */
+    var STORAGE_KEY = 'leon_recently_viewed';
+    var MAX_ITEMS = 4;
+
+    function getRecent() {
+      try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]'); }
+      catch (e) { return []; }
+    }
+
+    function setRecent(items) {
+      try { localStorage.setItem(STORAGE_KEY, JSON.stringify(items)); }
+      catch (e) { /* storage full or disabled */ }
+    }
+
+    function trackProductView() {
+      var match = window.location.pathname.match(/^\/products\/([^\/\?]+)/);
+      if (!match) return;
+      var handle = match[1];
+
+      fetch('/products/' + handle + '.js', { credentials: 'same-origin' })
+        .then(function (r) { return r.ok ? r.json() : null; })
+        .then(function (product) {
+          if (!product) return;
+          var items = getRecent().filter(function (i) { return i.handle !== handle; });
+          items.unshift({
+            handle: handle,
+            url: product.url,
+            title: product.title,
+            price: product.price,
+            image: product.featured_image || (product.images && product.images[0]) || null
+          });
+          setRecent(items.slice(0, MAX_ITEMS));
+        })
+        .catch(function () {});
+    }
+
+    function formatMoney(cents) {
+      var amount = (cents / 100).toFixed(2);
+      var currency = (window.Shopify && Shopify.currency && Shopify.currency.active) || '';
+      return amount + (currency ? ' ' + currency : '');
+    }
+
+    function renderRecentlyViewed() {
+      if (!searchDrawer) return;
+      var recentSection = searchDrawer.querySelector('[data-recent-section]');
+      var emptySection = searchDrawer.querySelector('[data-empty-section]');
+      var container = searchDrawer.querySelector('[data-recent-products]');
+      if (!recentSection || !container) return;
+
+      var items = getRecent();
+      if (!items.length) {
+        recentSection.hidden = true;
+        if (emptySection) emptySection.hidden = false;
+        return;
+      }
+
+      recentSection.hidden = false;
+      if (emptySection) emptySection.hidden = true;
+
+      container.innerHTML = items.map(function (item) {
+        var img = item.image
+          ? '<img src="' + item.image + '" alt="" loading="lazy" class="search-drawer__recent-img">'
+          : '';
+        return (
+          '<a href="' + item.url + '" class="search-drawer__recent-card">' +
+            '<div class="search-drawer__recent-img-wrap">' + img + '</div>' +
+            '<span class="search-drawer__recent-title">' + item.title + '</span>' +
+            '<span class="search-drawer__recent-price">' + formatMoney(item.price) + '</span>' +
+          '</a>'
+        );
+      }).join('');
+    }
+
+    trackProductView();
+
+    /* ─── Mobile menu ─── */
+    var dialog = document.querySelector('[data-mobile-menu]');
+    if (!dialog) return;
     var openBtn = header.querySelector('[data-mobile-open]');
     var closeBtn = dialog.querySelector('[data-mobile-close]');
     var panels = dialog.querySelectorAll('[data-panel]');
@@ -923,110 +1236,98 @@
       panelHistory = ['root'];
     }
 
-    if (openBtn) {
-      openBtn.addEventListener('click', function () {
-        resetPanels();
-        dialog.showModal();
-      });
-    }
+    if (openBtn) openBtn.addEventListener('click', function () { resetPanels(); dialog.showModal(); });
+    if (closeBtn) closeBtn.addEventListener('click', function () { dialog.close(); });
+    dialog.addEventListener('click', function (e) { if (e.target === dialog) dialog.close(); });
 
-    if (closeBtn) {
-      closeBtn.addEventListener('click', function () {
-        dialog.close();
-      });
-    }
-
-    dialog.addEventListener('click', function (e) {
-      if (e.target === dialog) dialog.close();
-    });
-
-    /* Navigate forward */
     dialog.querySelectorAll('[data-go-to]').forEach(function (btn) {
       btn.addEventListener('click', function () {
         var targetId = btn.getAttribute('data-go-to');
         var current = dialog.querySelector('.mobile-menu__panel--active');
         var target = dialog.querySelector('[data-panel="' + targetId + '"]');
         if (!current || !target) return;
-
         current.classList.remove('mobile-menu__panel--active');
         current.classList.add('mobile-menu__panel--exit-left');
         target.classList.add('mobile-menu__panel--active');
-
         panelHistory.push(targetId);
       });
     });
 
-    /* Navigate back */
     dialog.querySelectorAll('[data-go-back]').forEach(function (btn) {
       btn.addEventListener('click', function () {
         if (panelHistory.length <= 1) return;
-
         var currentId = panelHistory.pop();
         var prevId = panelHistory[panelHistory.length - 1];
-
         var current = dialog.querySelector('[data-panel="' + currentId + '"]');
         var prev = dialog.querySelector('[data-panel="' + prevId + '"]');
         if (!current || !prev) return;
-
         current.classList.remove('mobile-menu__panel--active');
         prev.classList.remove('mobile-menu__panel--exit-left');
         prev.classList.add('mobile-menu__panel--active');
       });
     });
-  });
+  })();
 </script>
 
 {% schema %}
 {
-  "name": "t:general.header",
+  "name": "Header",
   "settings": [
     {
-      "type": "link_list",
-      "id": "menu",
-      "label": "t:labels.menu"
+      "type": "paragraph",
+      "content": "Navbar structure is hardcoded to match imported collections. Use blocks below to set featured images for the mega menus."
     }
   ],
   "blocks": [
     {
-      "type": "mega_menu",
-      "name": "t:general.mega_menu",
+      "type": "featured_image",
+      "name": "Mega menu featured image",
       "settings": [
         {
-          "type": "text",
-          "id": "menu_item",
-          "label": "t:labels.menu_item",
-          "info": "t:labels.menu_item_info"
+          "type": "select",
+          "id": "slot",
+          "label": "Position",
+          "default": "new-products-1",
+          "options": [
+            { "value": "new-products-1", "label": "New Products — left image" },
+            { "value": "new-products-2", "label": "New Products — right image" },
+            { "value": "shop-1", "label": "Shop — image 1 (Clothing)" },
+            { "value": "shop-2", "label": "Shop — image 2 (Outerwear)" },
+            { "value": "shop-3", "label": "Shop — image 3 (Accessories)" }
+          ]
         },
         {
           "type": "image_picker",
           "id": "featured_image",
-          "label": "t:labels.featured_image"
+          "label": "Image"
         },
         {
           "type": "text",
-          "id": "featured_caption",
-          "label": "t:labels.featured_caption"
-        },
-        {
-          "type": "url",
-          "id": "featured_link",
-          "label": "t:labels.featured_link"
-        },
-        {
-          "type": "image_picker",
-          "id": "featured_image_2",
-          "label": "t:labels.featured_image_2"
+          "id": "image_url",
+          "label": "Or external image URL"
         },
         {
           "type": "text",
-          "id": "featured_caption_2",
-          "label": "t:labels.featured_caption_2"
+          "id": "caption",
+          "label": "Caption"
         },
         {
           "type": "url",
-          "id": "featured_link_2",
-          "label": "t:labels.featured_link_2"
+          "id": "link",
+          "label": "Custom link (optional)"
         }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Header",
+      "blocks": [
+        { "type": "featured_image", "settings": { "slot": "new-products-1" } },
+        { "type": "featured_image", "settings": { "slot": "new-products-2" } },
+        { "type": "featured_image", "settings": { "slot": "shop-1" } },
+        { "type": "featured_image", "settings": { "slot": "shop-2" } },
+        { "type": "featured_image", "settings": { "slot": "shop-3" } }
       ]
     }
   ]

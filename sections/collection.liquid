@@ -58,20 +58,6 @@
         {% endif %}
       </div>
 
-      <div class="collection-page__sort">
-        <label for="sort-by" class="collection-page__sort-label">{{ 'collection.sort_by' | t }}:</label>
-        <select id="sort-by" class="collection-page__sort-select" data-sort-select>
-          {% assign sort_options = 'manual,best-selling,title-ascending,title-descending,price-ascending,price-descending,created-ascending,created-descending' | split: ',' %}
-          {% for option in sort_options %}
-            <option
-              value="{{ option }}"
-              {% if collection.sort_by == option %}selected{% endif %}
-            >
-              {{ 'collection.sort_options.' | append: option | replace: '-', '_' | t }}
-            </option>
-          {% endfor %}
-        </select>
-      </div>
     </div>
   </div>
 
@@ -79,143 +65,114 @@
     <!-- Filters sidebar — always visible on desktop -->
     <aside class="collection-page__filters" aria-label="{{ 'collection.filters' | t }}">
       <div class="collection-page__filters-inner">
+        <div class="collection-page__filters-scroll">
 
-        <!-- Availability -->
-        {% for filter in collection.filters %}
-          {% if filter.param_name == 'filter.v.availability' %}
-            <details class="collection-page__filter-group" open>
-              <summary class="collection-page__filter-heading">{{ filter.label }}</summary>
-              <div class="collection-page__filter-options">
-                {% for value in filter.values %}
-                  <label class="collection-page__filter-option">
-                    <input
-                      type="checkbox"
-                      name="{{ value.param_name }}"
-                      value="{{ value.value }}"
-                      {% if value.active %}checked{% endif %}
-                      {% if value.count == 0 %}disabled{% endif %}
-                      class="collection-page__filter-checkbox"
-                      data-filter-input
-                    >
-                    <span class="collection-page__filter-label">{{ value.label }}</span>
-                    <span class="collection-page__filter-count">({{ value.count }})</span>
-                  </label>
-                {% endfor %}
-              </div>
-            </details>
-          {% endif %}
-        {% endfor %}
+        {%- comment -%} ── Order by (first group) ── {%- endcomment -%}
+        <details class="collection-page__filter-group">
+          <summary class="collection-page__filter-heading">Order by</summary>
+          <div class="collection-page__filter-options">
+            {%- assign sort_options = 'manual|Featured,best-selling|Best selling,title-ascending|Alphabetically A-Z,title-descending|Alphabetically Z-A,price-ascending|Price low to high,price-descending|Price high to low,created-descending|Newest,created-ascending|Oldest' | split: ',' -%}
+            {%- for opt in sort_options -%}
+              {%- assign opt_parts = opt | split: '|' -%}
+              {%- assign opt_value = opt_parts[0] -%}
+              {%- assign opt_label = opt_parts[1] -%}
+              <label class="collection-page__filter-option">
+                <input type="radio" name="sort_by" value="{{ opt_value }}"
+                  {% if collection.sort_by == opt_value %}checked{% endif %}
+                  class="collection-page__filter-radio" data-sort-radio>
+                <span class="collection-page__filter-label">{{ opt_label }}</span>
+              </label>
+            {%- endfor -%}
+          </div>
+        </details>
 
-        <!-- Price -->
-        {% for filter in collection.filters %}
-          {% if filter.type == 'price_range' %}
-            <details class="collection-page__filter-group" open>
-              <summary class="collection-page__filter-heading">{{ filter.label }}</summary>
-              <div class="collection-page__filter-options">
-                <div class="collection-page__price-range">
-                  <div class="collection-page__price-field">
-                    <label for="filter-price-min" class="collection-page__price-label">
-                      {{ 'collection.price_min' | t }}
-                    </label>
-                    <div class="collection-page__price-input-wrap">
-                      <span class="collection-page__price-currency">{{ cart.currency.symbol }}</span>
-                      <input
-                        type="number"
-                        id="filter-price-min"
-                        name="{{ filter.min_value.param_name }}"
-                        value="{{ filter.min_value.value | divided_by: 100.0 }}"
-                        min="0"
-                        {% if filter.range_max %}max="{{ filter.range_max | divided_by: 100.0 }}"{% endif %}
-                        placeholder="0"
-                        class="collection-page__price-input"
-                        data-filter-input
-                      >
-                    </div>
-                  </div>
-                  <span class="collection-page__price-separator">–</span>
-                  <div class="collection-page__price-field">
-                    <label for="filter-price-max" class="collection-page__price-label">
-                      {{ 'collection.price_max' | t }}
-                    </label>
-                    <div class="collection-page__price-input-wrap">
-                      <span class="collection-page__price-currency">{{ cart.currency.symbol }}</span>
-                      <input
-                        type="number"
-                        id="filter-price-max"
-                        name="{{ filter.max_value.param_name }}"
-                        value="{{ filter.max_value.value | divided_by: 100.0 }}"
-                        min="0"
-                        {% if filter.range_max %}max="{{ filter.range_max | divided_by: 100.0 }}"{% endif %}
-                        placeholder="{{ filter.range_max | divided_by: 100.0 }}"
-                        class="collection-page__price-input"
-                        data-filter-input
-                      >
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </details>
-          {% endif %}
-        {% endfor %}
+        {%- comment -%}
+          ── Ordered filter slots ──
+          1. Category    → product_type / product_category
+          2. Collection  → vendor / brand
+          3. Cut         → option.taglia (or cut)
+          4. Price       → price_range
+          Matching is done by param_name substring.
+        {%- endcomment -%}
 
-        <!-- All remaining list filters (color, size, vendor, product type, material, etc.) -->
-        {% for filter in collection.filters %}
-          {% if filter.type == 'list' %}
-            {% if filter.param_name != 'filter.v.availability' %}
-              <details class="collection-page__filter-group"{% if filter.active_values.size > 0 %} open{% endif %}>
-                <summary class="collection-page__filter-heading">{{ filter.label }}</summary>
+        {%- capture filter_slots -%}
+          product|Category
+          vendor|Collection
+          taglia|Cut
+          price|Price
+        {%- endcapture -%}
+
+        {%- assign slots = filter_slots | strip | split: '
+' -%}
+        {%- for slot in slots -%}
+          {%- assign parts = slot | strip | split: '|' -%}
+          {%- assign key = parts[0] -%}
+          {%- assign heading = parts[1] -%}
+
+          {%- for filter in collection.filters -%}
+            {%- assign match = false -%}
+            {%- if key == 'price' and filter.type == 'price_range' -%}{%- assign match = true -%}{%- endif -%}
+            {%- if key != 'price' and filter.param_name contains key -%}{%- assign match = true -%}{%- endif -%}
+
+            {%- if match -%}
+              <details class="collection-page__filter-group"{% if filter.active_values.size > 0 or heading == 'Category' %} open{% endif %}>
+                <summary class="collection-page__filter-heading">{{ heading }}</summary>
                 <div class="collection-page__filter-options">
-                  {% if filter.values.size > 10 %}
-                    <div class="collection-page__filter-search-wrap">
-                      <input
-                        type="text"
-                        class="collection-page__filter-search"
-                        placeholder="{{ 'collection.search_filter' | t }}"
-                        data-filter-search="{{ filter.label | handleize }}"
-                        aria-label="{{ 'collection.search_filter' | t }}"
-                      >
+
+                  {%- if filter.type == 'price_range' -%}
+                    {%- assign price_max = filter.range_max | divided_by: 100.0 -%}
+                    {%- assign price_min_val = filter.min_value.value | default: 0 | divided_by: 100.0 -%}
+                    {%- assign price_max_val = filter.max_value.value | default: filter.range_max | divided_by: 100.0 -%}
+                    <div class="collection-page__price-slider" data-price-slider
+                      data-price-max="{{ price_max }}"
+                      data-currency="{{ cart.currency.symbol }}">
+                      <div class="collection-page__price-values">
+                        <span class="collection-page__price-value" data-price-min-label>{{ cart.currency.symbol }}{{ price_min_val | round }}</span>
+                        <span class="collection-page__price-value" data-price-max-label>{{ cart.currency.symbol }}{{ price_max_val | round }}</span>
+                      </div>
+                      <div class="collection-page__price-track">
+                        <div class="collection-page__price-track-fill" data-price-fill></div>
+                        <input type="range" min="0" max="{{ price_max }}" step="1"
+                          value="{{ price_min_val | round }}"
+                          name="{{ filter.min_value.param_name }}"
+                          class="collection-page__price-range-input collection-page__price-range-input--min"
+                          data-price-min data-filter-input>
+                        <input type="range" min="0" max="{{ price_max }}" step="1"
+                          value="{{ price_max_val | round }}"
+                          name="{{ filter.max_value.param_name }}"
+                          class="collection-page__price-range-input collection-page__price-range-input--max"
+                          data-price-max data-filter-input>
+                      </div>
                     </div>
-                  {% endif %}
-                  <div class="collection-page__filter-list" data-filter-list="{{ filter.label | handleize }}">
-                    {% for value in filter.values %}
-                      <label class="collection-page__filter-option" data-filter-value="{{ value.label | downcase }}">
-                        <input
-                          type="checkbox"
-                          name="{{ value.param_name }}"
-                          value="{{ value.value }}"
-                          {% if value.active %}checked{% endif %}
-                          {% if value.count == 0 %}disabled{% endif %}
-                          class="collection-page__filter-checkbox"
-                          data-filter-input
-                        >
-                        {% comment %} Color swatch for color filters {% endcomment %}
-                        {% if filter.label == 'Color' or filter.label == 'Colour' or filter.label == 'color' %}
-                          <span
-                            class="collection-page__color-swatch"
-                            style="background-color: {{ value.value | handleize | replace: '-', '' }}"
-                          ></span>
-                        {% endif %}
-                        <span class="collection-page__filter-label">{{ value.label }}</span>
-                        <span class="collection-page__filter-count">({{ value.count }})</span>
-                      </label>
-                    {% endfor %}
-                  </div>
+                  {%- else -%}
+                    {%- if filter.values.size > 10 -%}
+                      <div class="collection-page__filter-search-wrap">
+                        <input type="text" class="collection-page__filter-search"
+                          placeholder="{{ 'collection.search_filter' | t }}"
+                          data-filter-search="{{ heading | handleize }}"
+                          aria-label="{{ 'collection.search_filter' | t }}">
+                      </div>
+                    {%- endif -%}
+                    <div class="collection-page__filter-list" data-filter-list="{{ heading | handleize }}">
+                      {%- for value in filter.values -%}
+                        <label class="collection-page__filter-option" data-filter-value="{{ value.label | downcase }}">
+                          <input type="checkbox" name="{{ value.param_name }}" value="{{ value.value }}"
+                            {% if value.active %}checked{% endif %}
+                            {% if value.count == 0 %}disabled{% endif %}
+                            class="collection-page__filter-checkbox" data-filter-input>
+                          <span class="collection-page__filter-label">{{ value.label }}</span>
+                          <span class="collection-page__filter-count">({{ value.count }})</span>
+                        </label>
+                      {%- endfor -%}
+                    </div>
+                  {%- endif -%}
+
                 </div>
               </details>
-            {% endif %}
-          {% endif %}
-        {% endfor %}
+            {%- endif -%}
+          {%- endfor -%}
+        {%- endfor -%}
 
-        <!-- Filter actions -->
-        <div class="collection-page__filter-actions">
-          <button type="button" class="collection-page__filter-apply" data-filter-apply>
-            {{ 'collection.apply_filters' | t }}
-          </button>
-          {% if any_active %}
-            <a href="{{ collection.url }}" class="collection-page__filter-clear">
-              {{ 'collection.clear_all' | t }}
-            </a>
-          {% endif %}
         </div>
       </div>
     </aside>
@@ -468,12 +425,27 @@
 
   /* Filters */
   .collection-page__filters {
-    display: block;
+    align-self: start;
+    position: sticky;
+    top: calc(3rem + 24px);
+    max-height: calc(100dvh - 3rem - 48px);
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    padding-right: 8px;
+    padding-bottom: 200px;
   }
 
-  .collection-page__filters-inner {
-    position: sticky;
-    top: 24px;
+  .collection-page__filters-inner,
+  .collection-page__filters-scroll {
+    display: contents;
+  }
+
+  .collection-page__filters::-webkit-scrollbar {
+    width: 3px;
+  }
+
+  .collection-page__filters::-webkit-scrollbar-thumb {
+    background: #ccc;
   }
 
   .collection-page__filter-group {
@@ -613,83 +585,122 @@
     display: flex;
     flex-direction: column;
     gap: 8px;
-    max-height: 240px;
-    overflow-y: auto;
   }
 
-  .collection-page__filter-list::-webkit-scrollbar {
-    width: 3px;
-  }
-
-  .collection-page__filter-list::-webkit-scrollbar-thumb {
-    background: #ccc;
-  }
-
-  /* Price range */
-  .collection-page__price-range {
-    display: flex;
-    align-items: flex-end;
-    gap: 8px;
-  }
-
-  .collection-page__price-field {
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-    flex: 1;
-  }
-
-  .collection-page__price-label {
-    font-size: 11px;
-    letter-spacing: 0.05em;
-    text-transform: uppercase;
-    opacity: 0.5;
-  }
-
-  .collection-page__price-input-wrap {
-    display: flex;
-    align-items: center;
+  /* Radio inputs (for Order by) */
+  .collection-page__filter-radio {
+    width: 14px;
+    height: 14px;
     border: 1px solid #ccc;
-    padding: 0 8px;
-  }
-
-  .collection-page__price-currency {
-    font-size: 12px;
-    opacity: 0.5;
+    border-radius: 50%;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    cursor: pointer;
+    position: relative;
     flex-shrink: 0;
   }
 
-  .collection-page__price-input {
-    width: 100%;
-    padding: 8px 4px;
-    border: none;
-    font-size: 12px;
-    font-family: inherit;
-    color: var(--color-foreground);
-    background: none;
-    outline: none;
-    border-radius: 0;
-    -moz-appearance: textfield;
+  .collection-page__filter-radio:checked {
+    border-color: var(--color-foreground);
   }
 
-  .collection-page__price-input::-webkit-inner-spin-button,
-  .collection-page__price-input::-webkit-outer-spin-button {
+  .collection-page__filter-radio:checked::after {
+    content: '';
+    position: absolute;
+    top: 3px;
+    left: 3px;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background-color: var(--color-foreground);
+  }
+
+  /* Price slider */
+  .collection-page__price-slider {
+    padding: 4px 0;
+  }
+
+  .collection-page__price-values {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 14px;
+  }
+
+  .collection-page__price-value {
+    font-size: 12px;
+    letter-spacing: 0.03em;
+    font-weight: 600;
+  }
+
+  .collection-page__price-track {
+    position: relative;
+    height: 3px;
+    background: #e5e5e5;
+    border-radius: 999px;
+  }
+
+  .collection-page__price-track-fill {
+    position: absolute;
+    height: 100%;
+    background: var(--color-foreground);
+    border-radius: 999px;
+  }
+
+  .collection-page__price-range-input {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    background: none;
     -webkit-appearance: none;
+    appearance: none;
+    pointer-events: none;
     margin: 0;
   }
 
-  .collection-page__price-separator {
-    font-size: 14px;
-    padding-bottom: 8px;
-    opacity: 0.4;
+  .collection-page__price-range-input::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background: var(--color-background);
+    border: 1px solid var(--color-foreground);
+    cursor: pointer;
+    pointer-events: auto;
+    margin-top: 0;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
   }
 
-  /* Filter actions */
+  .collection-page__price-range-input::-moz-range-thumb {
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background: var(--color-background);
+    border: 1px solid var(--color-foreground);
+    cursor: pointer;
+    pointer-events: auto;
+  }
+
+  .collection-page__price-range-input::-webkit-slider-runnable-track {
+    background: transparent;
+    border: none;
+  }
+
+  .collection-page__price-range-input::-moz-range-track {
+    background: transparent;
+    border: none;
+  }
+
+  /* Filter actions — pinned at bottom of sticky sidebar */
   .collection-page__filter-actions {
     display: flex;
     flex-direction: column;
     gap: 8px;
     padding-top: 20px;
+    flex-shrink: 0;
+    background: var(--color-background);
   }
 
   .collection-page__filter-apply {
@@ -964,33 +975,34 @@
     var section = document.querySelector('.collection-page');
     if (!section) return;
 
-    /* Sort select */
-    var sortSelect = section.querySelector('[data-sort-select]');
-    if (sortSelect) {
-      sortSelect.addEventListener('change', function () {
-        var url = new URL(window.location.href);
-        url.searchParams.set('sort_by', sortSelect.value);
-        window.location.href = url.toString();
-      });
-    }
-
     /* Apply filters — works for both sidebar and drawer */
     function applyFilters(container) {
       var url = new URL(window.location.origin + window.location.pathname);
       var inputs = container.querySelectorAll('[data-filter-input]');
 
-      /* Preserve sort */
-      var currentUrl = new URL(window.location.href);
-      var sortBy = currentUrl.searchParams.get('sort_by');
-      if (sortBy) url.searchParams.set('sort_by', sortBy);
+      var sortRadio = container.querySelector('[data-sort-radio]:checked');
+      if (sortRadio && sortRadio.value) {
+        url.searchParams.set('sort_by', sortRadio.value);
+      } else {
+        var currentUrl = new URL(window.location.href);
+        var sortBy = currentUrl.searchParams.get('sort_by');
+        if (sortBy) url.searchParams.set('sort_by', sortBy);
+      }
 
       inputs.forEach(function (input) {
         if (input.type === 'checkbox' && input.checked) {
           url.searchParams.append(input.name, input.value);
-        } else if (input.type === 'number' && input.value !== '') {
-          var cents = Math.round(parseFloat(input.value) * 100);
-          if (!isNaN(cents) && cents > 0) {
-            url.searchParams.set(input.name, cents);
+        } else if (input.type === 'range') {
+          var val = parseFloat(input.value);
+          if (!isNaN(val)) {
+            var isMin = input.hasAttribute('data-price-min');
+            var max = parseFloat(input.getAttribute('max'));
+            /* Only submit if range is narrower than defaults */
+            if (isMin && val > 0) {
+              url.searchParams.set(input.name, Math.round(val * 100));
+            } else if (!isMin && val < max) {
+              url.searchParams.set(input.name, Math.round(val * 100));
+            }
           }
         }
       });
@@ -998,13 +1010,52 @@
       window.location.href = url.toString();
     }
 
-    /* Desktop sidebar apply */
-    var sidebarApply = section.querySelector('[data-filter-apply]');
-    if (sidebarApply) {
-      sidebarApply.addEventListener('click', function () {
-        applyFilters(section.querySelector('.collection-page__filters'));
-      });
+    /* Price dual-slider */
+    function initPriceSlider(slider) {
+      var minInput = slider.querySelector('[data-price-min]');
+      var maxInput = slider.querySelector('[data-price-max]');
+      var minLabel = slider.querySelector('[data-price-min-label]');
+      var maxLabel = slider.querySelector('[data-price-max-label]');
+      var fill = slider.querySelector('[data-price-fill]');
+      var currency = slider.getAttribute('data-currency') || '';
+      var rangeMax = parseFloat(slider.getAttribute('data-price-max')) || 100;
+      if (!minInput || !maxInput) return;
+
+      function update() {
+        var minV = parseFloat(minInput.value);
+        var maxV = parseFloat(maxInput.value);
+        if (minV > maxV - 1) {
+          if (this === minInput) minV = maxV - 1;
+          else maxV = minV + 1;
+          minInput.value = minV;
+          maxInput.value = maxV;
+        }
+        var minPct = (minV / rangeMax) * 100;
+        var maxPct = (maxV / rangeMax) * 100;
+        fill.style.left = minPct + '%';
+        fill.style.right = (100 - maxPct) + '%';
+        minLabel.textContent = currency + Math.round(minV);
+        maxLabel.textContent = currency + Math.round(maxV);
+      }
+      minInput.addEventListener('input', update);
+      maxInput.addEventListener('input', update);
+      update();
     }
+    section.querySelectorAll('[data-price-slider]').forEach(initPriceSlider);
+
+    /* Auto-apply on change */
+    function bindAutoApply(container) {
+      container.querySelectorAll('input[type="checkbox"][data-filter-input], input[type="radio"][data-sort-radio]')
+        .forEach(function (input) {
+          input.addEventListener('change', function () { applyFilters(container); });
+        });
+      container.querySelectorAll('input[type="range"][data-filter-input]')
+        .forEach(function (input) {
+          input.addEventListener('change', function () { applyFilters(container); });
+        });
+    }
+    var sidebar = section.querySelector('.collection-page__filters');
+    if (sidebar) bindAutoApply(sidebar);
 
     /* Filter search within long lists */
     section.querySelectorAll('[data-filter-search]').forEach(function (input) {
@@ -1037,13 +1088,9 @@
         var filtersInner = section.querySelector('.collection-page__filters-inner');
         if (filtersInner) {
           drawerBody.innerHTML = filtersInner.innerHTML;
-          /* Bind apply in drawer */
-          var drawerApply = drawerBody.querySelector('[data-filter-apply]');
-          if (drawerApply) {
-            drawerApply.addEventListener('click', function () {
-              applyFilters(drawerBody);
-            });
-          }
+          bindAutoApply(drawerBody);
+          /* Bind price slider in drawer */
+          drawerBody.querySelectorAll('[data-price-slider]').forEach(initPriceSlider);
           /* Bind search in drawer */
           drawerBody.querySelectorAll('[data-filter-search]').forEach(function (input) {
             var listId = input.dataset.filterSearch;

@@ -82,6 +82,9 @@ description: "CSS, JavaScript, and HTML coding standards for Shopify Liquid them
 /* Do: media queries inside selectors */
 .header {
   width: 100%;
+  position: sticky;
+  top: 0;
+  
 
   @media screen and (min-width: 750px) {
     width: auto;

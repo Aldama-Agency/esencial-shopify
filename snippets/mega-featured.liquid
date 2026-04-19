@@ -1,0 +1,55 @@
+{%- comment -%}
+  Renders a featured image card inside a mega menu.
+  Accepts: block, fallback_link, fallback_label
+{%- endcomment -%}
+
+{%- liquid
+  assign has_block = false
+  if block
+    assign has_block = true
+  endif
+
+  assign link_href = fallback_link
+  assign label_text = fallback_label
+
+  if has_block and block.settings.link != blank
+    assign link_href = block.settings.link
+  endif
+  if has_block and block.settings.caption != blank
+    assign label_text = block.settings.caption
+  endif
+-%}
+
+<a href="{{ link_href }}" class="mega__featured-link"{% if has_block %} {{ block.shopify_attributes }}{% endif %}>
+  <div class="mega__featured-media">
+    {%- if has_block and block.settings.image != blank -%}
+      <img
+        src="{{ block.settings.image | image_url: width: 600 }}"
+        alt="{{ block.settings.image.alt | escape }}"
+        loading="lazy"
+        width="600"
+        height="800"
+        class="mega__featured-img"
+      >
+    {%- elsif has_block and block.settings.image_url != blank -%}
+      <img
+        src="{{ block.settings.image_url }}"
+        alt="{{ label_text | escape }}"
+        loading="lazy"
+        class="mega__featured-img"
+      >
+    {%- elsif fallback_image_url != blank -%}
+      <img
+        src="{{ fallback_image_url }}"
+        alt="{{ label_text | escape }}"
+        loading="lazy"
+        class="mega__featured-img"
+      >
+    {%- else -%}
+      <div class="mega__featured-placeholder">
+        <span>{{ label_text }}</span>
+      </div>
+    {%- endif -%}
+  </div>
+  <span class="mega__featured-caption">{{ label_text | upcase }}</span>
+</a>
