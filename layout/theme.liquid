@@ -10,6 +10,9 @@
     {% # Social, title, etc. %}
     {% render 'meta-tags' %}
 
+    <link rel="icon" type="image/x-icon" href="{{ 'favicon.ico' | asset_url }}">
+    <link rel="shortcut icon" type="image/x-icon" href="{{ 'favicon.ico' | asset_url }}">
+
     {{ content_for_header }}
   </head>
 
@@ -19,5 +22,61 @@
     {{ content_for_layout }}
 
     {% sections 'footer-group' %}
+
+    <a
+      href="https://aldama.agency"
+      target="_blank"
+      rel="noopener"
+      class="aldama-badge"
+      aria-label="Proyecto creado por Aldama"
+    >
+      <span class="aldama-badge__dot" aria-hidden="true"></span>
+      <span class="aldama-badge__text">Este proyecto es creado por <strong>aldama</strong></span>
+    </a>
+
+    <style>
+      .aldama-badge {
+        position: fixed;
+        bottom: 16px;
+        right: 16px;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 10px 16px;
+        background: #000;
+        color: #fff;
+        font-size: 12px;
+        letter-spacing: 0.04em;
+        text-decoration: none;
+        border-radius: 999px;
+        box-shadow: 0 4px 14px rgba(0, 0, 0, 0.18);
+        z-index: 9999;
+        transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+      }
+      .aldama-badge:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25);
+        background: #111;
+      }
+      .aldama-badge__dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: #4ade80;
+        box-shadow: 0 0 0 0 rgba(74, 222, 128, 0.6);
+        animation: aldama-pulse 1.8s infinite;
+      }
+      .aldama-badge__text strong {
+        font-weight: 700;
+      }
+      @keyframes aldama-pulse {
+        0% { box-shadow: 0 0 0 0 rgba(74, 222, 128, 0.6); }
+        70% { box-shadow: 0 0 0 8px rgba(74, 222, 128, 0); }
+        100% { box-shadow: 0 0 0 0 rgba(74, 222, 128, 0); }
+      }
+      @media (max-width: 480px) {
+        .aldama-badge { font-size: 11px; padding: 8px 12px; bottom: 12px; right: 12px; }
+      }
+    </style>
   </body>
 </html>

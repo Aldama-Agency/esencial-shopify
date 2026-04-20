@@ -192,7 +192,7 @@
         {% else %}
           <div class="collection-page__grid">
             {% for product in collection.products %}
-              <div class="collection-page__card">
+              <div class="collection-page__card" data-product-handle="{{ product.handle }}" data-product-title="{{ product.title | escape }}" data-product-variant="{{ product.selected_or_first_available_variant.id }}">
                 <a href="{{ product.url }}" class="collection-page__card-link">
                   <div class="collection-page__image-wrapper">
                     {% if product.featured_image != blank %}
@@ -207,6 +207,20 @@
                     {% else %}
                       {{ 'product-1' | placeholder_svg_tag: 'collection-page__image collection-page__placeholder' }}
                     {% endif %}
+
+                    <button type="button" class="collection-page__action collection-page__action--wishlist" data-card-wishlist aria-label="Add to wishlist">
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+                      </svg>
+                    </button>
+
+                    <button type="button" class="collection-page__action collection-page__action--cart" data-card-cart aria-label="Add to cart">
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <circle cx="9" cy="21" r="1"/>
+                        <circle cx="20" cy="21" r="1"/>
+                        <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/>
+                      </svg>
+                    </button>
                   </div>
 
                   <div class="collection-page__info">
@@ -779,6 +793,71 @@
     aspect-ratio: 3 / 4;
     overflow: hidden;
     background-color: #f0f0f0;
+    position: relative;
+  }
+
+  .collection-page__action {
+    position: absolute;
+    width: 34px;
+    height: 34px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255, 255, 255, 0);
+    backdrop-filter: blur(4px);
+    border: none;
+    cursor: pointer;
+    color: var(--color-foreground);
+    padding: 0;
+    transition: background 0.2s, color 0.2s;
+    z-index: 2;
+  }
+
+  .collection-page__action:hover {
+    background: #000;
+    color: #fff;
+  }
+
+  .collection-page__action--wishlist {
+    top: 0px;
+    right: 0px;
+  }
+
+  .collection-page__action--wishlist.is-active {
+    background: #000;
+    color: #fff;
+  }
+
+  .collection-page__action--wishlist.is-active svg {
+    fill: currentColor;
+  }
+
+  .collection-page__action--cart {
+    bottom: 0px;
+    left: 0px;
+  }
+
+  /* Toast */
+  .leon-toast {
+    position: fixed;
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%) translateY(20px);
+    background: #000;
+    color: #fff;
+    font-size: 12px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 12px 24px;
+    z-index: 10000;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.25s ease, transform 0.25s ease;
+  }
+
+  .leon-toast.is-visible {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
   }
 
   .collection-page__image {
@@ -1112,6 +1191,90 @@
         drawer.showModal();
       });
     }
+
+    /* Toast */
+    var toastEl = null, toastTimer = null;
+    function showToast(msg) {
+      if (!toastEl) {
+        toastEl = document.createElement('div');
+        toastEl.className = 'leon-toast';
+        document.body.appendChild(toastEl);
+      }
+      toastEl.textContent = msg;
+      requestAnimationFrame(function () { toastEl.classList.add('is-visible'); });
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(function () {
+        toastEl.classList.remove('is-visible');
+      }, 2200);
+    }
+
+    /* Wishlist + cart actions on product cards */
+    var WISHLIST_KEY = 'leon_wishlist';
+    function readWishlist() {
+      try { return JSON.parse(localStorage.getItem(WISHLIST_KEY) || '[]'); }
+      catch (e) { return []; }
+    }
+    function writeWishlist(list) {
+      try { localStorage.setItem(WISHLIST_KEY, JSON.stringify(list)); } catch (e) {}
+    }
+
+    function syncWishlistState() {
+      var list = readWishlist();
+      section.querySelectorAll('.collection-page__card').forEach(function (card) {
+        var handle = card.getAttribute('data-product-handle');
+        var btn = card.querySelector('[data-card-wishlist]');
+        if (!btn) return;
+        if (list.indexOf(handle) !== -1) btn.classList.add('is-active');
+        else btn.classList.remove('is-active');
+      });
+    }
+    syncWishlistState();
+
+    section.querySelectorAll('[data-card-wishlist]').forEach(function (btn) {
+      btn.addEventListener('click', function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+        var card = btn.closest('.collection-page__card');
+        var handle = card.getAttribute('data-product-handle');
+        var title = card.getAttribute('data-product-title') || 'Product';
+        var list = readWishlist();
+        var idx = list.indexOf(handle);
+        if (idx === -1) {
+          list.push(handle);
+          writeWishlist(list);
+          btn.classList.add('is-active');
+          showToast(title + ' added to wishlist');
+        } else {
+          list.splice(idx, 1);
+          writeWishlist(list);
+          btn.classList.remove('is-active');
+          showToast(title + ' removed from wishlist');
+        }
+      });
+    });
+
+    section.querySelectorAll('[data-card-cart]').forEach(function (btn) {
+      btn.addEventListener('click', function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+        var card = btn.closest('.collection-page__card');
+        var variantId = card.getAttribute('data-product-variant');
+        var title = card.getAttribute('data-product-title') || 'Product';
+        if (!variantId) return;
+        btn.disabled = true;
+        fetch('/cart/add.js', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+          body: JSON.stringify({ items: [{ id: variantId, quantity: 1 }] })
+        }).then(function (r) { return r.ok ? r.json() : Promise.reject(r); })
+          .then(function () {
+            showToast(title + ' added to cart');
+            document.dispatchEvent(new CustomEvent('cart:updated'));
+          })
+          .catch(function () { showToast('Could not add to cart'); })
+          .finally(function () { btn.disabled = false; });
+      });
+    });
 
     if (drawerClose && drawer) {
       drawerClose.addEventListener('click', function () {

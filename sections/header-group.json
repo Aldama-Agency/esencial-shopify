@@ -18,10 +18,25 @@
     "header": {
       "type": "header",
       "settings": {}
+    },
+    "top-categories": {
+      "type": "top-categories",
+      "blocks": {
+        "c1": { "type": "category", "settings": { "collection": "new-in", "label": "New In" } },
+        "c2": { "type": "category", "settings": { "collection": "main-ss26", "label": "Main SS26" } },
+        "c3": { "type": "category", "settings": { "collection": "travel-capsule", "label": "Travel" } },
+        "c4": { "type": "category", "settings": { "collection": "pantaloni", "label": "Pantaloni" } },
+        "c5": { "type": "category", "settings": { "collection": "dresses", "label": "Dresses" } },
+        "c6": { "type": "category", "settings": { "collection": "shirts", "label": "Shirts" } },
+        "c7": { "type": "category", "settings": { "collection": "jackets", "label": "Jackets" } },
+        "c8": { "type": "category", "settings": { "collection": "archive", "label": "Archive" } }
+      },
+      "block_order": ["c1", "c2", "c3", "c4", "c5", "c6", "c7", "c8"]
     }
   },
   "order": [
     "topbar",
-    "header"
+    "header",
+    "top-categories"
   ]
 }
