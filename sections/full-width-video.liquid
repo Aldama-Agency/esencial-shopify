@@ -1,0 +1,95 @@
+<div class="full-width-video full-width">
+  {% if section.settings.video != blank %}
+    <video
+      class="full-width-video__video"
+      autoplay
+      muted
+      loop
+      playsinline
+      preload="metadata"
+      {% if section.settings.poster_url != blank %}poster="{{ section.settings.poster_url }}"{% endif %}
+    >
+      {% for source in section.settings.video.sources %}
+        <source src="{{ source.url }}" type="{{ source.mime_type }}">
+      {% endfor %}
+    </video>
+  {% elsif section.settings.video_url != blank %}
+    <video
+      class="full-width-video__video"
+      autoplay
+      muted
+      loop
+      playsinline
+      preload="metadata"
+      {% if section.settings.poster_url != blank %}poster="{{ section.settings.poster_url }}"{% endif %}
+    >
+      <source src="{{ section.settings.video_url }}" type="video/mp4">
+    </video>
+  {% else %}
+    <div class="full-width-video__placeholder">
+      <span>Replace with your video</span>
+    </div>
+  {% endif %}
+</div>
+
+{% stylesheet %}
+  .full-width-video {
+    width: 100%;
+    position: relative;
+    overflow: hidden;
+    background-color: #000;
+  }
+
+  .full-width-video__video {
+    width: 100%;
+    height: auto;
+    display: block;
+    object-fit: cover;
+  }
+
+  .full-width-video__placeholder {
+    width: 100%;
+    height: 60dvh;
+    background-color: #e5e5e5;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .full-width-video__placeholder span {
+    font-size: 13px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: #999;
+    border: 1px dashed #ccc;
+    padding: 12px 20px;
+  }
+{% endstylesheet %}
+
+{% schema %}
+{
+  "name": "Full Width Video",
+  "settings": [
+    {
+      "type": "video",
+      "id": "video",
+      "label": "Video"
+    },
+    {
+      "type": "text",
+      "id": "video_url",
+      "label": "Or external video URL (mp4)"
+    },
+    {
+      "type": "text",
+      "id": "poster_url",
+      "label": "Poster image URL (optional)"
+    }
+  ],
+  "presets": [
+    {
+      "name": "Full Width Video"
+    }
+  ]
+}
+{% endschema %}

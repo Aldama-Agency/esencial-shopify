@@ -1,0 +1,55 @@
+{
+  "sections": {
+    "about-banner": {
+      "type": "hero",
+      "settings": {
+        "background_image": "https://8pm.it/cdn/shop/files/Progetto_senza_titolo_-_2026-03-03T164031.332.png?v=1772552521&width=2000",
+        "section_height": "hero--full",
+        "show_copy": false
+      }
+    },
+    "about-col-1": {
+      "type": "our-story",
+      "settings": {
+        "paragraph_1": "9PM was born in January 2009 from the passion and dedication of a team of designers for couture, precious materials, refined volumes and the art of tailoring.",
+        "paragraph_2": "An aim of conceiving everyday clothing, comfortable and accessible for everyone without sacrificing elegance and creativity.",
+        "image_position": "right",
+        "show_link": false,
+        "image_url": "https://8pm.it/cdn/shop/files/Progetto_senza_titolo_-_2026-03-03T163329.824.png?v=1772552539&width=1000"
+      }
+    },
+    "about-col-2": {
+      "type": "our-story",
+      "settings": {
+        "paragraph_1": "An Italian women's clothing brand with an evocative name: the moment of day when we transition from business to pleasure, from formal to informal.",
+        "paragraph_2": "Each collection is built around refined volumes, soft tailoring, and materials chosen for their lasting quality and touch.",
+        "image_position": "left",
+        "show_link": false,
+        "image_url": "https://8pm.it/cdn/shop/files/Progetto_senza_titolo_-_2026-03-03T163438.401.png?v=1772552548&width=1000"
+      }
+    },
+    "about-col-3": {
+      "type": "our-story",
+      "settings": {
+        "paragraph_1": "From the atelier in Italy to stores around the world, every piece is designed to move easily between the routines of the day and the moments that matter.",
+        "paragraph_2": "Designed for women who dress for themselves, 9PM blends tradition with a contemporary sensibility that feels effortless, confident, and personal.",
+        "image_position": "right",
+        "show_link": false,
+        "image_url": "https://8pm.it/cdn/shop/files/Progetto_senza_titolo_-_2026-03-03T163556.624.png?v=1772552554&width=1000"
+      }
+    },
+    "about-video": {
+      "type": "full-width-video",
+      "settings": {
+        "video_url": "https://8pm.it/cdn/shop/videos/c/vp/2ac9d3d3b2774aeb9b506e0aabc9afd3/2ac9d3d3b2774aeb9b506e0aabc9afd3.SD-480p-1.2Mbps-64962364.mp4?v=0"
+      }
+    }
+  },
+  "order": [
+    "about-banner",
+    "about-col-1",
+    "about-col-2",
+    "about-col-3",
+    "about-video"
+  ]
+}

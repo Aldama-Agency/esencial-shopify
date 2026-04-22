@@ -12,15 +12,17 @@
   <div class="hero__overlay" aria-hidden="true"></div>
   <div class="hero__content">
     {% content_for 'blocks' %}
-    <div class="hero__copy">
-      <p class="hero__eyebrow">New Season · SS26</p>
-      <h2 class="hero__headline">Dress the moment.<br>Discover the collection.</h2>
-      <p class="hero__sub">Curated pieces designed for the everyday, styled for the unforgettable.</p>
-      <a href="/collections/all" class="hero__cta">
-        Shop All
-        <span class="hero__cta-arrow" aria-hidden="true">→</span>
-      </a>
-    </div>
+    {% if section.settings.show_copy %}
+      <div class="hero__copy">
+        <p class="hero__eyebrow">New Season · SS26</p>
+        <h2 class="hero__headline">Dress the moment.<br>Discover the collection.</h2>
+        <p class="hero__sub">Curated pieces designed for the everyday, styled for the unforgettable.</p>
+        <a href="/collections/all" class="hero__cta">
+          Shop All
+          <span class="hero__cta-arrow" aria-hidden="true">→</span>
+        </a>
+      </div>
+    {% endif %}
   </div>
 </div>
 
@@ -159,6 +161,12 @@
       "id": "background_color",
       "label": "t:labels.background",
       "default": "#e5e5e5"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_copy",
+      "label": "t:labels.show_copy",
+      "default": true
     },
     {
       "type": "select",

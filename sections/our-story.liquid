@@ -1,22 +1,28 @@
-<section class="our-story full-width">
+<section class="our-story our-story--image-{{ section.settings.image_position | default: 'right' }} full-width">
   <div class="our-story__inner">
-    <div class="our-story__left">
-      <div class="our-story__left-inner">
+    <div class="our-story__text">
+      <div class="our-story__text-inner">
         <div class="our-story__paragraphs">
-          <div class="our-story__para-col">
-            <p class="our-story__paragraph">{{ section.settings.paragraph_1 }}</p>
-          </div>
-          <div class="our-story__para-col">
-            <p class="our-story__paragraph">{{ section.settings.paragraph_2 }}</p>
-          </div>
+          {% if section.settings.paragraph_1 != blank %}
+            <div class="our-story__para-col">
+              <p class="our-story__paragraph">{{ section.settings.paragraph_1 }}</p>
+            </div>
+          {% endif %}
+          {% if section.settings.paragraph_2 != blank %}
+            <div class="our-story__para-col">
+              <p class="our-story__paragraph">{{ section.settings.paragraph_2 }}</p>
+            </div>
+          {% endif %}
         </div>
-        <a href="{{ section.settings.about_link | default: '/pages/about' }}" class="our-story__link">
-          {{ section.settings.link_text | default: 'About Us' | upcase }}
-        </a>
+        {% if section.settings.show_link and section.settings.link_text != blank %}
+          <a href="{{ section.settings.about_link | default: '/pages/about' }}" class="our-story__link">
+            {{ section.settings.link_text | upcase }}
+          </a>
+        {% endif %}
       </div>
     </div>
 
-    <div class="our-story__right">
+    <div class="our-story__media">
       {% if section.settings.image != blank %}
         <img
           src="{{ section.settings.image | image_url: width: 1400 }}"
@@ -53,7 +59,15 @@
     width: 100%;
   }
 
-  .our-story__left {
+  .our-story--image-left .our-story__media {
+    order: 1;
+  }
+
+  .our-story--image-left .our-story__text {
+    order: 2;
+  }
+
+  .our-story__text {
     width: 50%;
     position: sticky;
     top: 0;
@@ -66,7 +80,7 @@
     box-sizing: border-box;
   }
 
-  .our-story__left-inner {
+  .our-story__text-inner {
     width: 100%;
     max-width: 560px;
   }
@@ -104,7 +118,7 @@
     opacity: 0.6;
   }
 
-  .our-story__right {
+  .our-story__media {
     width: 50%;
     flex-shrink: 0;
   }
@@ -135,11 +149,17 @@
   }
 
   @media (max-width: 768px) {
-    .our-story__inner {
+    .our-story__inner,
+    .our-story--image-left .our-story__inner {
       flex-direction: column;
     }
 
-    .our-story__left {
+    .our-story--image-left .our-story__media,
+    .our-story--image-left .our-story__text {
+      order: initial;
+    }
+
+    .our-story__text {
       width: 100%;
       position: static;
       height: auto;
@@ -155,7 +175,7 @@
       flex: 0 0 100%;
     }
 
-    .our-story__right {
+    .our-story__media {
       width: 100%;
     }
 
@@ -186,6 +206,22 @@
       "default": "An Italian women's clothing brand with an evocative name: the moment of day when we transition from business to pleasure, from formal to informal."
     },
     {
+      "type": "select",
+      "id": "image_position",
+      "label": "Image position",
+      "default": "right",
+      "options": [
+        { "value": "right", "label": "Right" },
+        { "value": "left", "label": "Left" }
+      ]
+    },
+    {
+      "type": "checkbox",
+      "id": "show_link",
+      "label": "Show link",
+      "default": true
+    },
+    {
       "type": "text",
       "id": "link_text",
       "label": "Link text",
@@ -199,7 +235,7 @@
     {
       "type": "image_picker",
       "id": "image",
-      "label": "Image (right side)"
+      "label": "Image"
     },
     {
       "type": "text",
